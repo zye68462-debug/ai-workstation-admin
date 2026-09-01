@@ -224,6 +224,7 @@
     vertical-align: middle;
   }
   tbody tr:hover { background: #fafcff; }
+  thead th:last-child, tbody td:last-child { padding-left: 28px; }
   .col-check { width: 40px; text-align: center; }
   .col-expand { width: 40px; text-align: center; }
   .expand-btn {
@@ -446,6 +447,7 @@
     font-family: inherit;
   }
   .form-control:focus { border-color: #2563eb; }
+  input::placeholder, textarea::placeholder { color: #c0c4cc; opacity: 1; }
   textarea.form-control {
     height: auto; padding: 8px 12px; resize: vertical; line-height: 1.5;
   }
@@ -927,7 +929,7 @@
           <span class="arrow">▼</span>
         </div>
         <ul class="submenu">
-          <li><div class="menu-link active">渠道列表</div></li>
+          <li><div class="menu-link active" onclick="openChannelPage(this)">渠道列表</div></li>
           <li><div class="menu-link">渠道源配置</div></li>
         </ul>
       </li>
@@ -969,6 +971,7 @@
         </div>
         <ul class="submenu">
           <li><div class="menu-link" onclick="openAppPage(this)">应用管理</div></li>
+          <li><div class="menu-link" onclick="openAgentPage(this)">业务支持中心配置</div></li>
         </ul>
       </li>
     </ul>
@@ -995,7 +998,7 @@
     <!-- 标签页 -->
     <div class="tabs-bar">
       <div class="tab"><span>运营总览</span><span class="close">×</span></div>
-      <div class="tab active"><span>渠道列表</span><span class="close">×</span></div>
+      <div class="tab active" onclick="openChannelPage()"><span>渠道列表</span><span class="close">×</span></div>
     </div>
 
     <!-- 内容 -->
@@ -1121,15 +1124,75 @@
                 <th style="width:60px;">图标</th>
                 <th>应用名称</th>
                 <th style="width:100px;">应用分类</th>
+                <th style="width:110px;">上架终端</th>
                 <th>访问地址</th>
                 <th style="width:170px;">归属部门 / 负责人</th>
                 <th style="width:170px;">可见范围</th>
                 <th style="width:60px;">排序</th>
+                <th style="width:130px;">更新时间</th>
                 <th style="width:70px;">状态</th>
                 <th style="width:120px;">操作</th>
               </tr>
             </thead>
             <tbody id="appTbody"><!-- JS 渲染 --></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 业务支持中心配置页（工作台顶部智能体） -->
+      <div id="pageAgents" style="display:none;">
+        <!-- 筛选 -->
+        <div class="card filter-card">
+          <div class="filter-row">
+            <div class="filter-item">
+              <label>智能体名称</label>
+              <input type="text" id="agentFName" placeholder="请输入智能体名称" />
+            </div>
+            <div class="filter-item">
+              <label>可见范围</label>
+              <select id="agentFScope">
+                <option value="">全部范围</option>
+                <option value="company">全公司</option>
+                <option value="custom">指定部门/人员</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>状态</label>
+              <select id="agentFStatus">
+                <option value="">全部状态</option>
+                <option value="enabled">启用</option>
+                <option value="disabled">禁用</option>
+              </select>
+            </div>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-primary" onclick="agentSearch()">查找</button>
+            <button class="btn btn-default" onclick="agentResetFilter()">清空</button>
+          </div>
+        </div>
+
+        <!-- 智能体列表 -->
+        <div class="card table-card">
+          <div class="table-head">
+            <span class="title">工作台顶部智能体列表</span>
+            <div class="actions">
+              <button class="btn btn-primary" onclick="openAgentModal()">+ 新增智能体</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px;">序号</th>
+                <th style="width:260px;">智能体名称</th>
+                <th style="width:140px;">编码</th>
+                <th style="width:110px;">上架终端</th>
+                <th style="width:170px;">归属部门 / 负责人</th>
+                <th style="width:170px;">可见范围</th>
+                <th style="width:70px;">状态</th>
+                <th style="width:120px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="agentTbody"><!-- JS 渲染 --></tbody>
           </table>
         </div>
       </div>
@@ -1443,10 +1506,27 @@
           <span class="tip-ico">ⓘ</span><span>可直接填写图片地址，或点击「上传图片」选择本地文件；支持 PNG / JPG / SVG / WebP</span>
         </div>
         <div class="form-row">
-          <label class="form-label required">访问地址</label>
-          <input type="text" class="form-control" id="appFormUrl" placeholder="如：https://oa.hczq.com.cn/..." oninput="hideAppErr('appErrUrl')" />
+          <label class="form-label required">上架终端</label>
+          <div style="flex:1;min-width:0;display:flex;gap:18px;align-items:center;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:#606266;"><input type="checkbox" id="appTermPc" onchange="hideAppErr('appErrTerm');syncAppUrlRows()" />PC端</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:#606266;"><input type="checkbox" id="appTermApp" onchange="hideAppErr('appErrTerm');syncAppUrlRows()" />APP端</label>
+          </div>
         </div>
-        <div class="conn-err" id="appErrUrl">请输入访问地址</div>
+        <div class="conn-err" id="appErrTerm">请至少选择一个上架终端</div>
+        <div id="appUrlPcWrap">
+          <div class="form-row">
+            <label class="form-label required">PC端访问地址</label>
+            <input type="text" class="form-control" id="appFormUrlPc" placeholder="如：https://oa.hczq.com.cn/..." oninput="hideAppErr('appErrUrlPc')" />
+          </div>
+          <div class="conn-err" id="appErrUrlPc">已勾选PC端，请输入PC端访问地址</div>
+        </div>
+        <div id="appUrlAppWrap">
+          <div class="form-row">
+            <label class="form-label required">APP端访问地址</label>
+            <input type="text" class="form-control" id="appFormUrlApp" placeholder="如：hczq://app/xxx（深链 scheme）" oninput="hideAppErr('appErrUrlApp')" />
+          </div>
+          <div class="conn-err" id="appErrUrlApp">已勾选APP端，请输入APP端访问地址</div>
+        </div>
         <div class="form-row">
           <label class="form-label">应用简介</label>
           <textarea class="form-control" id="appFormDesc" rows="2" placeholder="简要说明应用用途，如：用于合同线上审批与归档查询"></textarea>
@@ -1473,9 +1553,6 @@
             <button type="button" class="seg-item" onclick="selectAppScope('custom')">指定部门/人员</button>
           </div>
         </div>
-        <div class="form-tip-inline" style="margin:-6px 0 16px 110px;">
-          <span class="tip-ico">ⓘ</span><span>全公司：华创证券全员可见；指定部门/人员：部门与人员可同时配置，所选部门内人员及所选人员可见</span>
-        </div>
         <div id="appScopeSection" style="display:none;">
           <div class="form-row">
             <label class="form-label">选择部门</label>
@@ -1499,7 +1576,7 @@
         </div>
         <div class="conn-err" id="appErrSort">请填写不小于 1 的排序值</div>
         <div class="form-tip-inline" style="margin:-6px 0 16px 110px;">
-          <span class="tip-ico">ⓘ</span><span>数值越小越靠前，决定在 APP 端与 PC 端应用宫格中的展示顺序；允许重复，重复时先创建的在前</span>
+          <span class="tip-ico">ⓘ</span><span>数值越小应用越靠前；允许重复，重复时先创建的在前</span>
         </div>
         <div class="form-row">
           <label class="form-label required">状态</label>
@@ -1548,6 +1625,132 @@
             <tbody id="appCatTbody"><!-- JS 渲染 --></tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 新增/编辑顶部智能体弹框（业务支持中心配置） -->
+<div class="modal-mask" id="agentModal" style="display:none;z-index:1200;">
+  <div class="modal-wrap" style="width:640px;">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="agentModalTitle">新增智能体</span>
+        <span class="modal-close" onclick="closeAgentModal()">×</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label class="form-label required">智能体名称</label>
+          <input type="text" class="form-control" id="agentFormName" placeholder="如：智能费控助手" oninput="hideAppErr('agentErrName')" />
+        </div>
+        <div class="conn-err" id="agentErrName">请输入智能体名称</div>
+        <div class="form-row">
+          <label class="form-label required">智能体编码</label>
+          <input type="text" class="form-control" id="agentFormCode" placeholder="如：agent_fee" oninput="hideAppErr('agentErrCode')" />
+        </div>
+        <div class="conn-err" id="agentErrCode">请输入智能体编码</div>
+        <div class="form-row">
+          <label class="form-label required">图标URL</label>
+          <div class="conn-url-row">
+            <input type="text" class="form-control" id="agentFormIcon" placeholder="http(s)://..." oninput="hideAppErr('agentErrIcon')" />
+            <button type="button" class="btn btn-default conn-upload-btn" onclick="document.getElementById('agentIconFile').click()">上传图片</button>
+            <input type="file" id="agentIconFile" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none" onchange="handleAgentIconUpload(event)" />
+          </div>
+        </div>
+        <div class="conn-err" id="agentErrIcon">请上传或填写图标地址</div>
+        <div class="form-tip-inline" style="margin:-6px 0 16px 110px;">
+          <span class="tip-ico">ⓘ</span><span>展示在工作台顶部的智能体头像；可直接填写图片地址，或点击「上传图片」选择本地文件；支持 PNG / JPG / SVG / WebP</span>
+        </div>
+        <div class="form-row">
+          <label class="form-label required">简介</label>
+          <textarea class="form-control" id="agentFormDesc" rows="2" placeholder="一句话描述该业务支持中心是做什么的、服务谁，如：为固收部门提供投研数据查询、产品信息检索与业务流程支持" oninput="hideAppErr('agentErrDesc')"></textarea>
+        </div>
+        <div class="conn-err" id="agentErrDesc">请输入简介</div>
+        <div class="form-row">
+          <label class="form-label required">业务能力</label>
+          <textarea class="form-control" id="agentFormCaps" rows="3" placeholder="清晰、简洁地列出核心能力，每条以动词开头，用分号分隔。如：查询债券行情与估值；检索固收产品说明书；解答固收业务流程问题；生成投研日报摘要" oninput="hideAppErr('agentErrCaps')"></textarea>
+        </div>
+        <div class="conn-err" id="agentErrCaps">请输入业务能力</div>
+        <div class="form-row">
+          <label class="form-label required">快捷提示词</label>
+          <div style="flex:1;min-width:0;">
+            <div id="agentPromptsWrap"></div>
+            <button type="button" class="btn btn-default" style="margin-top:8px;" onclick="addAgentPrompt()">+ 添加提示词</button>
+          </div>
+        </div>
+        <div class="conn-err" id="agentErrPrompts">请至少填写一条提示词</div>
+        <div class="form-tip-inline" style="margin:-6px 0 16px 110px;">
+          <span class="tip-ico">ⓘ</span><span>用户在首页点击智能体卡片后展示这些快捷提示词，点击即可发起对话</span>
+        </div>
+        <div class="form-row">
+          <label class="form-label required">可见范围</label>
+          <div class="seg-group" id="agentScopeSeg">
+            <button type="button" class="seg-item active" onclick="selectAgentScope('company')">全公司</button>
+            <button type="button" class="seg-item" onclick="selectAgentScope('custom')">指定部门/人员</button>
+          </div>
+        </div>
+        <div class="form-tip-inline" style="margin:-6px 0 16px 110px;">
+          <span class="tip-ico">ⓘ</span><span>全公司：全员可见该智能体；指定部门/人员：部门与人员可同时配置，所选部门内人员及所选人员可见</span>
+        </div>
+        <div id="agentScopeSection" style="display:none;">
+          <div class="form-row">
+            <label class="form-label">选择部门</label>
+            <div style="flex:1;min-width:0;">
+              <button type="button" class="btn btn-default" onclick="openDeptModal()">选择部门</button>
+              <div id="agentDeptSummary" style="margin-top:8px;font-size:12px;color:#909399;"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">选择人员</label>
+            <div style="flex:1;min-width:0;">
+              <button type="button" class="btn btn-default" onclick="openUserModal()">选择人员</button>
+              <div id="agentUserSummary" style="margin-top:8px;font-size:12px;color:#909399;"></div>
+            </div>
+          </div>
+          <div class="conn-err" id="agentErrScopeSel">请至少选择一个部门或一名人员</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label required">上架终端</label>
+          <div style="flex:1;min-width:0;display:flex;gap:18px;align-items:center;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:#606266;"><input type="checkbox" id="agentTermPc" onchange="hideAppErr('agentErrTerm')" />PC端</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:#606266;"><input type="checkbox" id="agentTermApp" onchange="hideAppErr('agentErrTerm')" />APP端</label>
+          </div>
+        </div>
+        <div class="conn-err" id="agentErrTerm">请至少选择一个上架终端</div>
+        <div class="form-row">
+          <label class="form-label">归属部门</label>
+          <input type="text" class="form-control" id="agentFormOwnerDept" placeholder="如：固定收益部" oninput="hideAppErr('agentErrOwnerDept')" />
+        </div>
+        <div class="conn-err" id="agentErrOwnerDept">请输入归属部门</div>
+        <div class="form-row">
+          <label class="form-label">负责人</label>
+          <input type="text" class="form-control" id="agentFormOwnerName" placeholder="如：张三" oninput="hideAppErr('agentErrOwnerName')" />
+        </div>
+        <div class="conn-err" id="agentErrOwnerName">请输入负责人姓名</div>
+        <div class="form-row">
+          <label class="form-label">负责人联系方式</label>
+          <input type="text" class="form-control" id="agentFormOwnerContact" placeholder="手机号或邮箱，如：zhangsan@company.com" oninput="hideAppErr('agentErrOwnerContact')" />
+        </div>
+        <div class="conn-err" id="agentErrOwnerContact">请输入正确的手机号或邮箱</div>
+        <div class="form-row">
+          <label class="form-label required">排序</label>
+          <input type="number" class="form-control" id="agentFormSort" value="1" min="1" style="width:120px;flex:none;" oninput="hideAppErr('agentErrSort')" />
+        </div>
+        <div class="conn-err" id="agentErrSort">请填写不小于 1 的排序值</div>
+        <div class="form-tip-inline" style="margin:-6px 0 16px 110px;">
+          <span class="tip-ico">ⓘ</span><span>数值越小应用越靠前；允许重复，重复时先创建的在前</span>
+        </div>
+        <div class="form-row">
+          <label class="form-label required">状态</label>
+          <div class="seg-group" id="agentStatusSeg">
+            <button type="button" class="seg-item active" onclick="selectAgentStatus(true)">启用</button>
+            <button type="button" class="seg-item" onclick="selectAgentStatus(false)">禁用</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeAgentModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveAgentItem()">确定</button>
       </div>
     </div>
   </div>
@@ -2974,7 +3177,7 @@
     return result;
   }
 
-  const APPS_KEY = 'aiAdminQuickAppsV5';
+  const APPS_KEY = 'aiAdminQuickAppsV6';
   let quickApps = loadQuickApps();
   let editingAppId = null;
   let appScope = 'company';
@@ -2990,20 +3193,36 @@
     } catch (e) {}
     // 默认数据：与 APP 端 quickLinks 对齐，并带可见范围
     return [
-      { id: 'a1',  name: '合同管理系统',   icon: 'file',      color: '#4b9fe8', url: 'https://contract.hczq.com.cn:8443/htms/index.jsp', dept: '公司管理',   desc: '合同线上审批、用印与归档查询', ownerDept: '办公室（党委办）', ownerName: '陈强', ownerContact: '13985120366', scope: 'company', depts: [], users: [], sort: 1,  status: 'on' },
-      { id: 'a2',  name: 'OA系统',         icon: 'briefcase', color: '#6a9cf5', url: 'http://oam.hczq.com.cn:8080',                      dept: '公司管理',   desc: '公文流转、通知公告与日常审批', ownerDept: '办公室（党委办）', ownerName: '陈强', ownerContact: '13985120366', scope: 'company', depts: [], users: [], sort: 2,  status: 'on' },
-      { id: 'a3',  name: '人事系统',       icon: 'clipboard', color: '#8bb847', url: 'http://10.160.20.195:8088/',                       dept: '公司管理',   desc: '员工信息、考勤与薪酬查询', ownerDept: '人力资源部', ownerName: '吴十', ownerContact: '13765018842', scope: 'company', depts: [], users: [], sort: 3,  status: 'on' },
-      { id: 'a4',  name: '费用报销系统',   icon: 'fee',       color: '#5cb665', url: 'http://10.160.100.14:8081',                        dept: '公司管理',   desc: '日常费用报销与发票管理', ownerDept: '计划财务部', ownerName: '郑八', ownerContact: '13512876490', scope: 'company', depts: [], users: [], sort: 4,  status: 'on' },
-      { id: 'a5',  name: '会议室预订',     icon: 'calendar',  color: '#4299e1', url: 'http://bocm.hczq.com.cn/bocm/',                    dept: '日常办公',   desc: '会议室在线预订与使用查询', ownerDept: '北京行政中心', ownerName: '王五', ownerContact: '13608524719', scope: 'company', depts: [], users: [], sort: 5,  status: 'on' },
-      { id: 'a6',  name: '公司邮件系统',   icon: 'link',      color: '#6a9cf5', url: 'https://mail.hczq.com.cn/',                        dept: '日常办公',   desc: '公司企业邮箱收发与通讯录', ownerDept: '信息技术部', ownerName: '赵六', ownerContact: '13885467203', scope: 'company', depts: [], users: [], sort: 6,  status: 'on' },
-      { id: 'a7',  name: '智能知识库',     icon: 'book',      color: '#7c6ee6', url: 'https://10.160.203.159:8443/',                     dept: '日常办公',   desc: '制度文档与业务知识的智能检索', ownerDept: '信息技术部', ownerName: '赵六', ownerContact: '13885467203', scope: 'company', depts: [], users: [], sort: 7,  status: 'on' },
-      { id: 'a8',  name: '数据治理平台',   icon: 'chart',     color: '#e58a4e', url: 'https://data.hczq.com.cn',                         dept: '信息技术',   desc: '数据资产目录与数据质量监控', ownerDept: '信息技术部', ownerName: '赵六', ownerContact: '13885467203', scope: 'custom',  depts: ['信息技术部', '数字化运营部'], users: [], sort: 8, status: 'on' },
-      { id: 'a9',  name: '监管报送系统',   icon: 'report',    color: '#c05e5e', url: 'https://report.hczq.com.cn',                       dept: '合规部门',   desc: '监管报表编制与报送', ownerDept: '合规与法律事务部', ownerName: '孙七', ownerContact: '13765902158', scope: 'custom',  depts: ['合规与法律事务部'], users: ['张三'], sort: 9, status: 'on' },
-      { id: 'a10', name: '差旅报销系统',   icon: 'travel',    color: '#4299e1', url: 'http://tr.hczq.com.cn:8081',                       dept: '公司管理',   desc: '差旅申请、订票与报销', ownerDept: '计划财务部', ownerName: '郑八', ownerContact: '13512876490', scope: 'custom',  depts: [], users: ['张三', '李四'], sort: 10, status: 'on' },
+      { id: 'a1',  name: '合同管理系统',   icon: 'file',      color: '#4b9fe8', urlPc: 'https://contract.hczq.com.cn:8443/htms/index.jsp', urlApp: '', dept: '公司管理',   desc: '合同线上审批、用印与归档查询', ownerDept: '办公室（党委办）', ownerName: '陈强', ownerContact: '13985120366', scope: 'company', depts: [], users: [], sort: 1,  status: 'on', createdAt: '2026-06-10 09:30', updatedAt: '2026-08-12 14:20' },
+      { id: 'a2',  name: 'OA系统',         icon: 'briefcase', color: '#6a9cf5', urlPc: 'http://oam.hczq.com.cn:8080',                      urlApp: 'hczq://app/oa', dept: '公司管理',   desc: '公文流转、通知公告与日常审批', ownerDept: '办公室（党委办）', ownerName: '陈强', ownerContact: '13985120366', scope: 'company', depts: [], users: [], sort: 2,  status: 'on', createdAt: '2026-06-10 09:35', updatedAt: '2026-07-02 10:15' },
+      { id: 'a3',  name: '人事系统',       icon: 'clipboard', color: '#8bb847', urlPc: 'http://10.160.20.195:8088/',                       urlApp: 'hczq://app/hr', dept: '公司管理',   desc: '员工信息、考勤与薪酬查询', ownerDept: '人力资源部', ownerName: '吴十', ownerContact: '13765018842', scope: 'company', depts: [], users: [], sort: 3,  status: 'on', createdAt: '2026-06-11 15:00', updatedAt: '2026-06-11 15:00' },
+      { id: 'a4',  name: '费用报销系统',   icon: 'fee',       color: '#5cb665', urlPc: 'http://10.160.100.14:8081',                        urlApp: '', dept: '公司管理',   desc: '日常费用报销与发票管理', ownerDept: '计划财务部', ownerName: '郑八', ownerContact: '13512876490', scope: 'company', depts: [], users: [], sort: 4,  status: 'on', createdAt: '2026-06-12 10:20', updatedAt: '2026-08-01 09:00' },
+      { id: 'a5',  name: '会议室预订',     icon: 'calendar',  color: '#4299e1', urlPc: 'http://bocm.hczq.com.cn/bocm/',                    urlApp: '', dept: '日常办公',   desc: '会议室在线预订与使用查询', ownerDept: '北京行政中心', ownerName: '王五', ownerContact: '13608524719', scope: 'company', depts: [], users: [], sort: 5,  status: 'on', createdAt: '2026-06-15 16:40', updatedAt: '2026-06-15 16:40' },
+      { id: 'a6',  name: '公司邮件系统',   icon: 'link',      color: '#6a9cf5', urlPc: 'https://mail.hczq.com.cn/',                        urlApp: 'hczq://app/mail', dept: '日常办公',   desc: '公司企业邮箱收发与通讯录', ownerDept: '信息技术部', ownerName: '赵六', ownerContact: '13885467203', scope: 'company', depts: [], users: [], sort: 6,  status: 'on', createdAt: '2026-06-18 11:05', updatedAt: '2026-07-20 17:30' },
+      { id: 'a7',  name: '智能知识库',     icon: 'book',      color: '#7c6ee6', urlPc: 'https://10.160.203.159:8443/',                     urlApp: '', dept: '日常办公',   desc: '制度文档与业务知识的智能检索', ownerDept: '信息技术部', ownerName: '赵六', ownerContact: '13885467203', scope: 'company', depts: [], users: [], sort: 7,  status: 'on', createdAt: '2026-07-01 09:00', updatedAt: '2026-08-15 10:00' },
+      { id: 'a8',  name: '数据治理平台',   icon: 'chart',     color: '#e58a4e', urlPc: 'https://data.hczq.com.cn',                         urlApp: '', dept: '信息技术',   desc: '数据资产目录与数据质量监控', ownerDept: '信息技术部', ownerName: '赵六', ownerContact: '13885467203', scope: 'custom',  depts: ['信息技术部', '数字化运营部'], users: [], sort: 8, status: 'on', createdAt: '2026-07-05 14:30', updatedAt: '2026-07-05 14:30' },
+      { id: 'a9',  name: '监管报送系统',   icon: 'report',    color: '#c05e5e', urlPc: 'https://report.hczq.com.cn',                       urlApp: '', dept: '合规部门',   desc: '监管报表编制与报送', ownerDept: '合规与法律事务部', ownerName: '孙七', ownerContact: '13765902158', scope: 'custom',  depts: ['合规与法律事务部'], users: ['张三'], sort: 9, status: 'on', createdAt: '2026-07-10 10:45', updatedAt: '2026-08-20 16:10' },
+      { id: 'a10', name: '差旅报销系统',   icon: 'travel',    color: '#4299e1', urlPc: 'http://tr.hczq.com.cn:8081',                       urlApp: '', dept: '公司管理',   desc: '差旅申请、订票与报销', ownerDept: '计划财务部', ownerName: '郑八', ownerContact: '13512876490', scope: 'custom',  depts: [], users: ['张三', '李四'], sort: 10, status: 'on', createdAt: '2026-07-22 13:25', updatedAt: '2026-07-22 13:25' },
     ];
   }
   function saveQuickApps() {
     try { localStorage.setItem(APPS_KEY, JSON.stringify(quickApps)); } catch (e) {}
+  }
+
+  // ---- 菜单切换：回到渠道列表页 ----
+  function openChannelPage(el) {
+    document.querySelectorAll('.menu-link').forEach(i => i.classList.remove('active'));
+    if (!el) {
+      el = Array.from(document.querySelectorAll('.submenu .menu-link')).find(m => m.textContent.trim() === '渠道列表');
+    }
+    if (el) el.classList.add('active');
+    document.getElementById('pageApps').style.display = 'none';
+    document.getElementById('pageAgents').style.display = 'none';
+    document.getElementById('pageChannel').style.display = 'block';
+    const tabs = document.querySelector('.tabs-bar');
+    if (tabs) {
+      Array.from(tabs.children).forEach(t => t.classList.toggle('active', (t.querySelector('span') || {}).textContent === '渠道列表'));
+    }
   }
 
   // ---- 菜单切换：进入快捷应用管理页 ----
@@ -3011,6 +3230,7 @@
     document.querySelectorAll('.menu-link').forEach(i => i.classList.remove('active'));
     el.classList.add('active');
     document.getElementById('pageChannel').style.display = 'none';
+    document.getElementById('pageAgents').style.display = 'none';
     document.getElementById('pageApps').style.display = 'block';
     // 同步顶部 tab
     const tabs = document.querySelector('.tabs-bar');
@@ -3029,6 +3249,28 @@
     renderAppFilterDept();
     renderAppTable();
   }
+  // ---- 菜单切换：进入业务支持中心配置页（工作台顶部智能体） ----
+  function openAgentPage(el) {
+    document.querySelectorAll('.menu-link').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('pageChannel').style.display = 'none';
+    document.getElementById('pageApps').style.display = 'none';
+    document.getElementById('pageAgents').style.display = 'block';
+    const tabs = document.querySelector('.tabs-bar');
+    if (tabs) {
+      const arr = Array.from(tabs.children);
+      let agentTab = arr.find(t => (t.querySelector('span') || {}).textContent === '业务支持中心配置');
+      if (!agentTab) {
+        agentTab = document.createElement('div');
+        agentTab.className = 'tab';
+        agentTab.innerHTML = '<span>业务支持中心配置</span><span class="close" onclick="closeAgentTab(event)">×</span>';
+        tabs.appendChild(agentTab);
+      }
+      arr.forEach(x => x.classList.remove('active'));
+      agentTab.classList.add('active');
+    }
+    renderAgentTable();
+  }
   function closeAppTab(e) {
     e.stopPropagation();
     const tab = e.target.closest('.tab');
@@ -3038,6 +3280,18 @@
     const tabs = document.querySelector('.tabs-bar');
     const arr = Array.from(tabs.children);
     if (arr.length) arr[arr.length - 1].classList.add('active');
+    openChannelPage();
+  }
+  function closeAgentTab(e) {
+    e.stopPropagation();
+    const tab = e.target.closest('.tab');
+    tab.parentElement.removeChild(tab);
+    document.getElementById('pageAgents').style.display = 'none';
+    document.getElementById('pageChannel').style.display = 'block';
+    const tabs = document.querySelector('.tabs-bar');
+    const arr = Array.from(tabs.children);
+    if (arr.length) arr[arr.length - 1].classList.add('active');
+    openChannelPage();
   }
 
   // ---- 筛选 ----
@@ -3091,6 +3345,23 @@
     const tip = text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
     return `<div class="scope-clamp" title="${tip}">${tip}</div>`;
   }
+  function renderTermsCell(terms) {
+    const t = (terms && terms.length) ? terms : ['pc', 'app'];
+    const label = t.map(x => x === 'pc' ? 'PC端' : x === 'app' ? 'APP端' : x).join('、');
+    return `<span style="font-size:12px;color:#606266;">${label}</span>`;
+  }
+  function renderAppUrlCell(a) {
+    const pc = a.urlPc || a.url || '';
+    const app = a.urlApp || '';
+    const link = (u, tag) => `<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><span style="color:#909399;">${tag}</span> <a href="${u}" target="_blank" rel="noopener" style="color:#409eff;text-decoration:none;" title="点击打开：${u}">${u}</a></div>`;
+    const rows = [];
+    if (pc) rows.push(link(pc, 'PC'));
+    if (app) rows.push(`<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><span style="color:#909399;">APP</span> <span style="color:#606266;">${app}</span></div>`);
+    return rows.length ? rows.join('') : '<span style="color:#c0c4cc;">-</span>';
+  }
+  function renderTimeCell(a) {
+    return a.updatedAt || '-';
+  }
   function renderAppTable() {
     const name = (document.getElementById('appFName').value || '').trim();
     const dept = document.getElementById('appFDept').value;
@@ -3104,7 +3375,7 @@
     const tbody = document.getElementById('appTbody');
     if (!tbody) return;
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#c0c4cc;padding:36px 0;">暂无应用，点击右上角「新增应用」添加</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:#c0c4cc;padding:36px 0;">暂无应用，点击右上角「新增应用」添加</td></tr>';
       return;
     }
     tbody.innerHTML = list.map(a => {
@@ -3117,10 +3388,12 @@
         <td>${renderAppIconCell(a)}</td>
         <td style="font-weight:500;">${a.name}${a.desc ? `<div style="color:#909399;font-size:12px;font-weight:400;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.desc}">${a.desc}</div>` : ''}</td>
         <td style="color:#606266;white-space:nowrap;">${a.dept}</td>
-        <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="${a.url}" target="_blank" rel="noopener" style="color:#409eff;text-decoration:none;" title="点击打开：${a.url}">${a.url}</a></td>
+        <td style="white-space:nowrap;">${renderTermsCell(a.terms)}</td>
+        <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${renderAppUrlCell(a)}</td>
         <td style="white-space:nowrap;">${ownerHtml}</td>
         <td>${renderScopeCell(a)}</td>
         <td>${a.sort}</td>
+        <td style="color:#909399;font-size:12px;white-space:nowrap;">${renderTimeCell(a)}</td>
         <td style="white-space:nowrap;">${disabled ? '<span style="color:#909399;">禁用</span>' : '<span style="color:#67c23a;">启用</span>'}</td>
         <td style="white-space:nowrap;">
           <span class="op-link" onclick="openAppModal('${a.id}')">编辑</span>
@@ -3139,7 +3412,7 @@
     document.getElementById('appIconFile').value = '';
     scopeDeptsSel = new Set();
     scopeUsersSel = new Set();
-    ['appErrName', 'appErrDept', 'appErrIcon', 'appErrUrl', 'appErrOwnerDept', 'appErrOwnerName', 'appErrOwnerContact', 'appErrScopeSel'].forEach(hideAppErr);
+    ['appErrName', 'appErrDept', 'appErrIcon', 'appErrUrlPc', 'appErrUrlApp', 'appErrTerm', 'appErrOwnerDept', 'appErrOwnerName', 'appErrOwnerContact', 'appErrScopeSel'].forEach(hideAppErr);
 
     if (id) {
       const a = quickApps.find(x => x.id === id);
@@ -3147,28 +3420,37 @@
       document.getElementById('appFormName').value = a.name;
       deptSel.value = a.dept;
       document.getElementById('appFormIcon').value = a.icon || '';
-      document.getElementById('appFormUrl').value = a.url;
+      document.getElementById('appFormUrlPc').value = a.urlPc || a.url || '';
+      document.getElementById('appFormUrlApp').value = a.urlApp || '';
       document.getElementById('appFormDesc').value = a.desc || '';
       document.getElementById('appFormOwnerDept').value = a.ownerDept || '';
       document.getElementById('appFormOwnerName').value = a.ownerName || '';
       document.getElementById('appFormOwnerContact').value = a.ownerContact || '';
       document.getElementById('appFormSort').value = a.sort || 1;
+      const terms = a.terms || ['pc', 'app'];
+      document.getElementById('appTermPc').checked = terms.indexOf('pc') !== -1;
+      document.getElementById('appTermApp').checked = terms.indexOf('app') !== -1;
       scopeDeptsSel = new Set(a.depts || []);
       scopeUsersSel = new Set(a.users || []);
       selectAppScope(a.scope === 'company' ? 'company' : 'custom');
       selectAppStatus(a.status !== 'off');
+      syncAppUrlRows();
     } else {
       document.getElementById('appFormName').value = '';
       deptSel.value = '';
       document.getElementById('appFormIcon').value = '';
-      document.getElementById('appFormUrl').value = '';
+      document.getElementById('appFormUrlPc').value = '';
+      document.getElementById('appFormUrlApp').value = '';
       document.getElementById('appFormDesc').value = '';
       document.getElementById('appFormOwnerDept').value = '';
       document.getElementById('appFormOwnerName').value = '';
       document.getElementById('appFormOwnerContact').value = '';
       document.getElementById('appFormSort').value = quickApps.length + 1;
+      document.getElementById('appTermPc').checked = true;
+      document.getElementById('appTermApp').checked = true;
       selectAppScope('company');
       selectAppStatus(true);
+      syncAppUrlRows();
     }
     document.getElementById('appModal').style.display = 'flex';
   }
@@ -3179,6 +3461,12 @@
   function hideAppErr(id) {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
+  }
+  function showAppErr(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (msg) el.textContent = msg;
+    el.style.display = 'block';
   }
   function selectAppScope(scope) {
     appScope = scope;
@@ -3223,7 +3511,7 @@
     return out;
   }
   function closeDeptModal(ok) {
-    if (ok) { scopeDeptsSel = scopeDeptsTmp; hideAppErr('appErrScopeSel'); renderDeptSummary(); }
+    if (ok) { scopeDeptsSel = scopeDeptsTmp; hideAppErr('appErrScopeSel'); hideAppErr('agentErrScopeSel'); renderDeptSummary(); }
     document.getElementById('deptModal').style.display = 'none';
   }
   function toggleScopeDept(name, on) {
@@ -3266,10 +3554,13 @@
   }
   function renderDeptSummary() {
     const ds = orgCollapsedList(scopeDeptsSel);
-    const el = document.getElementById('appDeptSummary');
-    if (!ds.length) { el.innerHTML = '尚未选择部门'; return; }
-    const tip = ds.map(d => deptLabel(d)).join('、').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-    el.innerHTML = `<span title="${tip}" style="cursor:default;">已选 <b style="color:#4e5969;">${ds.length}</b> 个部门</span>`;
+    ['appDeptSummary', 'agentDeptSummary'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (!ds.length) { el.innerHTML = '尚未选择部门'; return; }
+      const tip = ds.map(d => deptLabel(d)).join('、').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      el.innerHTML = `<span title="${tip}" style="cursor:default;">已选 <b style="color:#4e5969;">${ds.length}</b> 个部门</span>`;
+    });
   }
   // ---- 选择人员弹框 ----
   function maskPhone(p) { return p ? p.slice(0, 3) + '*****' + p.slice(8) : ''; }
@@ -3281,7 +3572,7 @@
     document.getElementById('userModal').style.display = 'flex';
   }
   function closeUserModal(ok) {
-    if (ok) { scopeUsersSel = scopeUsersTmp; hideAppErr('appErrScopeSel'); renderUserSummary(); }
+    if (ok) { scopeUsersSel = scopeUsersTmp; hideAppErr('appErrScopeSel'); hideAppErr('agentErrScopeSel'); renderUserSummary(); }
     document.getElementById('userModal').style.display = 'none';
   }
   function toggleScopeUser(name) {
@@ -3312,10 +3603,13 @@
   }
   function renderUserSummary() {
     const us = Array.from(scopeUsersSel);
-    const el = document.getElementById('appUserSummary');
-    if (!us.length) { el.innerHTML = '尚未选择人员'; return; }
-    const tip = us.join('、').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-    el.innerHTML = `<span title="${tip}" style="cursor:default;">已选 <b style="color:#4e5969;">${us.length}</b> 名人员</span>`;
+    ['appUserSummary', 'agentUserSummary'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (!us.length) { el.innerHTML = '尚未选择人员'; return; }
+      const tip = us.join('、').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      el.innerHTML = `<span title="${tip}" style="cursor:default;">已选 <b style="color:#4e5969;">${us.length}</b> 名人员</span>`;
+    });
   }
   function selectAppStatus(on) {
     appStatusOn = on;
@@ -3329,11 +3623,20 @@
     (node.children || []).forEach(c => orgAllNames(c, out));
     return out;
   }
+  function syncAppUrlRows() {
+    document.getElementById('appUrlPcWrap').style.display = document.getElementById('appTermPc').checked ? 'block' : 'none';
+    document.getElementById('appUrlAppWrap').style.display = document.getElementById('appTermApp').checked ? 'block' : 'none';
+  }
+  function fmtDateTime(d) {
+    const p = n => (n < 10 ? '0' + n : '' + n);
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
   function saveApp() {
     const name = document.getElementById('appFormName').value.trim();
     const dept = document.getElementById('appFormDept').value;
     const icon = document.getElementById('appFormIcon').value.trim();
-    const url = document.getElementById('appFormUrl').value.trim();
+    const urlPc = document.getElementById('appFormUrlPc').value.trim();
+    const urlApp = document.getElementById('appFormUrlApp').value.trim();
     const desc = document.getElementById('appFormDesc').value.trim();
     const ownerDept = document.getElementById('appFormOwnerDept').value.trim();
     const ownerName = document.getElementById('appFormOwnerName').value.trim();
@@ -3344,7 +3647,12 @@
     if (!name) { document.getElementById('appErrName').style.display = 'block'; valid = false; }
     if (!dept) { document.getElementById('appErrDept').style.display = 'block'; valid = false; }
     if (!icon) { document.getElementById('appErrIcon').style.display = 'block'; valid = false; }
-    if (!url) { document.getElementById('appErrUrl').style.display = 'block'; valid = false; }
+    const terms = [];
+    if (document.getElementById('appTermPc').checked) terms.push('pc');
+    if (document.getElementById('appTermApp').checked) terms.push('app');
+    if (!terms.length) { document.getElementById('appErrTerm').style.display = 'block'; valid = false; }
+    if (terms.indexOf('pc') !== -1 && !urlPc) { document.getElementById('appErrUrlPc').style.display = 'block'; valid = false; }
+    if (terms.indexOf('app') !== -1 && !urlApp) { document.getElementById('appErrUrlApp').style.display = 'block'; valid = false; }
     if (ownerContact && !/^1[3-9]\d{9}$/.test(ownerContact) && !/^[\w.+-]+@[\w-]+(\.[\w-]+)+$/.test(ownerContact)) { document.getElementById('appErrOwnerContact').style.display = 'block'; valid = false; }
     if (!sortRaw || isNaN(sort) || sort < 1) { document.getElementById('appErrSort').style.display = 'block'; valid = false; }
     let depts = [], users = [];
@@ -3354,13 +3662,14 @@
       if (!depts.length && !users.length) { document.getElementById('appErrScopeSel').style.display = 'block'; valid = false; }
     }
     if (!valid) return;
+    const now = fmtDateTime(new Date());
     if (editingAppId) {
       const idx = quickApps.findIndex(x => x.id === editingAppId);
       if (idx !== -1) {
-        quickApps[idx] = { ...quickApps[idx], name, dept, icon, url, desc, ownerDept, ownerName, ownerContact, sort, scope: appScope, depts, users, status: appStatusOn ? 'on' : 'off' };
+        quickApps[idx] = { ...quickApps[idx], name, dept, icon, urlPc, urlApp, desc, ownerDept, ownerName, ownerContact, sort, terms, scope: appScope, depts, users, status: appStatusOn ? 'on' : 'off', updatedAt: now };
       }
     } else {
-      quickApps.push({ id: 'a' + Date.now(), name, dept, icon, url, desc, ownerDept, ownerName, ownerContact, sort, scope: appScope, depts, users, status: appStatusOn ? 'on' : 'off' });
+      quickApps.push({ id: 'a' + Date.now(), name, dept, icon, urlPc, urlApp, desc, ownerDept, ownerName, ownerContact, sort, terms, scope: appScope, depts, users, status: appStatusOn ? 'on' : 'off', createdAt: now, updatedAt: now });
     }
     saveQuickApps();
     renderAppTable();
@@ -3377,7 +3686,7 @@
   }
   function showCommonTip(title, msg) {
     document.getElementById('commonConfirmTitle').textContent = title;
-    document.getElementById('commonConfirmMsg').textContent = msg;
+    document.getElementById('commonConfirmMsg').innerHTML = msg;
     document.getElementById('commonConfirmCancelBtn').style.display = 'none';
     commonConfirmCb = null;
     document.getElementById('commonConfirmModal').style.display = 'flex';
@@ -3545,6 +3854,291 @@
   }
 
   renderAppFilterDept();
+
+  // ============ 业务支持中心配置（工作台顶部智能体） ============
+  const AGENTS_KEY = 'ai_workstation_admin_top_agents_v3';
+  const DEFAULT_AGENT_ICONS = {
+    agent_fee: 'https://console.enterprise.trae.cn/api/ide/v1/text_to_image?prompt=' + encodeURIComponent('3D cartoon avatar portrait of a friendly male finance accountant, blue suit, holding a calculator, soft studio lighting, plain light background') + '&image_size=square&v=3',
+    agent_hr: 'https://console.enterprise.trae.cn/api/ide/v1/text_to_image?prompt=' + encodeURIComponent('3D cartoon avatar of a friendly female HR professional, warm smile, business casual, soft studio lighting, plain light background') + '&image_size=square&v=3',
+    agent_it: 'https://console.enterprise.trae.cn/api/ide/v1/text_to_image?prompt=' + encodeURIComponent('3D cartoon avatar of a friendly male IT support engineer, headset and laptop, soft studio lighting, plain light background') + '&image_size=square&v=3'
+  };
+  const DEFAULT_TOP_AGENTS = [
+    { code: 'agent_fee', name: '智能费控助手', icon: DEFAULT_AGENT_ICONS.agent_fee, desc: '为全员提供费用报销、审批流程与预算查询支持', caps: '解答费用报销问题；查询审批流程进度；解读预算与发票政策', prompts: ['如何提交差旅费报销？', '招待费报销需要什么材料？'], sort: 1, status: 'enabled', scope: 'company', depts: [], users: [], terms: ['pc', 'app'], ownerDept: '计划财务部', ownerName: '李四', ownerContact: 'lisi@company.com' },
+    { code: 'agent_hr', name: '人事服务助手', icon: DEFAULT_AGENT_ICONS.agent_hr, desc: '为全员提供入离职、考勤请假与社保福利咨询', caps: '解答入离职办理流程；查询请假考勤规则；咨询社保公积金与员工福利', prompts: ['如何申请年假？', '社保缴费基数是多少？'], sort: 2, status: 'enabled', scope: 'company', depts: [], users: [], terms: ['pc', 'app'], ownerDept: '人力资源部', ownerName: '王五', ownerContact: 'wangwu@company.com' },
+    { code: 'agent_it', name: 'IT运维助手', icon: DEFAULT_AGENT_ICONS.agent_it, desc: '为全员提供账号权限、设备故障与网络问题支持', caps: '处理账号权限申请；排查设备与网络故障；指导办公系统使用', prompts: ['如何重置邮箱密码？', '办公电脑蓝屏怎么办？'], sort: 3, status: 'enabled', scope: 'company', depts: [], users: [], terms: ['pc', 'app'], ownerDept: '信息技术部', ownerName: '赵六', ownerContact: 'zhaoliu@company.com' }
+  ];
+  let topAgents = [];
+  try { topAgents = JSON.parse(localStorage.getItem(AGENTS_KEY) || ''); } catch (e) { topAgents = null; }
+  if (!Array.isArray(topAgents)) topAgents = JSON.parse(JSON.stringify(DEFAULT_TOP_AGENTS));
+
+  function saveTopAgents() {
+    localStorage.setItem(AGENTS_KEY, JSON.stringify(topAgents));
+  }
+
+  let editingAgentCode = null;
+  let agentScopeMode = 'company';
+  let agentStatusOn = true;
+  let agentPromptsTmp = [];
+
+  function renderAgentTable() {
+    const kw = (document.getElementById('agentFName').value || '').trim().toLowerCase();
+    const sc = document.getElementById('agentFScope').value;
+    const st = document.getElementById('agentFStatus').value;
+    const rows = topAgents.filter(a => {
+      if (kw && (a.name || '').toLowerCase().indexOf(kw) === -1) return false;
+      if (sc && a.scope !== sc) return false;
+      if (st && a.status !== st) return false;
+      return true;
+    }).sort((x, y) => (x.sort || 999) - (y.sort || 999));
+    const tbody = document.getElementById('agentTbody');
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#c0c4cc;padding:36px 0;">暂无智能体，点击右上角「新增智能体」添加</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map((a, i) => {
+      const esc = a.code.replace(/'/g, "\\'");
+      const disabled = a.status !== 'enabled';
+      const scopeHtml = a.scope === 'company'
+        ? '<span class="app-scope-tag app-scope-company">全公司</span>'
+        : `<span class="app-scope-tag app-scope-dept" title="查看可见范围详情" style="cursor:pointer;" onclick="showAgentScope('${esc}')">指定范围</span>`;
+      return `<tr style="${disabled ? 'opacity:.55;' : ''}">
+        <td>${i + 1}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            ${a.icon ? `<img src="${a.icon}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex:none;" onerror="this.style.display='none'" />` : '<span style="width:36px;height:36px;border-radius:8px;background:#e8f3ff;display:flex;align-items:center;justify-content:center;color:#1890ff;font-weight:600;flex:none;">' + (a.name || 'A').charAt(0) + '</span>'}
+            <div style="font-weight:500;">${a.name}${a.desc ? `<div style="color:#909399;font-size:12px;font-weight:400;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.desc}">${a.desc}</div>` : ''}</div>
+          </div>
+        </td>
+        <td style="color:#909399;">${a.code}</td>
+        <td style="white-space:nowrap;">${renderTermsCell(a.terms)}</td>
+        <td style="white-space:nowrap;">${(a.ownerDept || a.ownerName) ? `<div style="color:#606266;">${a.ownerDept || '-'}<span style="color:#909399;"> · ${a.ownerName || '-'}</span></div><div style="color:#909399;font-size:12px;">${a.ownerContact || ''}</div>` : '<span style="color:#c0c4cc;">-</span>'}</td>
+        <td>${scopeHtml}</td>
+        <td style="white-space:nowrap;">${disabled ? '<span style="color:#909399;">禁用</span>' : '<span style="color:#67c23a;">启用</span>'}</td>
+        <td style="white-space:nowrap;">
+          <span class="op-link" onclick="openAgentModal('${esc}')">编辑</span>
+          <span class="op-link" style="color:#f56c6c;" onclick="deleteTopAgent('${esc}')">删除</span>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function agentSearch() { renderAgentTable(); }
+  function agentResetFilter() {
+    document.getElementById('agentFName').value = '';
+    document.getElementById('agentFScope').value = '';
+    document.getElementById('agentFStatus').value = '';
+    renderAgentTable();
+  }
+
+  function showAgentScope(code) {
+    const a = topAgents.find(x => x.code === code);
+    if (!a) return;
+    const ds = orgCollapsedList(new Set(a.depts || []));
+    const us = a.users || [];
+    const html =
+      `<div style="margin-bottom:10px;"><span style="color:#909399;margin-right:6px;">部门(${ds.length})：</span>` +
+      (ds.length ? ds.map(d => `<span class="app-scope-tag app-scope-dept" style="margin:0 6px 6px 0;">${deptLabel(d)}</span>`).join('') : '<span style="color:#c0c4cc;">无</span>') +
+      `</div><div><span style="color:#909399;margin-right:6px;">人员(${us.length})：</span>` +
+      (us.length ? us.map(u => `<span class="app-scope-tag app-scope-user" style="margin:0 6px 6px 0;">${u}</span>`).join('') : '<span style="color:#c0c4cc;">无</span>') + '</div>';
+    showCommonTip(`「${a.name}」可见范围`, html);
+  }
+
+  function selectAgentScope(mode) {
+    agentScopeMode = mode;
+    document.querySelectorAll('#agentScopeSeg .seg-item').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0) === (mode === 'company'));
+    });
+    document.getElementById('agentScopeSection').style.display = mode === 'custom' ? '' : 'none';
+    hideAppErr('agentErrScopeSel');
+  }
+  function selectAgentStatus(on) {
+    agentStatusOn = on;
+    document.querySelectorAll('#agentStatusSeg .seg-item').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0) === on);
+    });
+  }
+
+  function addAgentPrompt() {
+    agentPromptsTmp.push('');
+    renderAgentPromptRows();
+    const inputs = document.querySelectorAll('#agentPromptsWrap input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  }
+  function removeAgentPrompt(i) {
+    agentPromptsTmp.splice(i, 1);
+    renderAgentPromptRows();
+  }
+  function updateAgentPrompt(i, v) {
+    agentPromptsTmp[i] = v;
+    hideAppErr('agentErrPrompts');
+  }
+  function renderAgentPromptRows() {
+    const wrap = document.getElementById('agentPromptsWrap');
+    if (!agentPromptsTmp.length) {
+      wrap.innerHTML = '<div style="color:#909399;font-size:12px;padding:4px 0;">暂无提示词，请添加</div>';
+      return;
+    }
+    wrap.innerHTML = agentPromptsTmp.map((p, i) => `
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input type="text" class="form-control" value="${String(p).replace(/"/g, '&quot;')}" placeholder="如：如何提交差旅费报销？" oninput="updateAgentPrompt(${i}, this.value)" />
+        <button type="button" class="btn btn-default" style="flex:none;" onclick="removeAgentPrompt(${i})">删除</button>
+      </div>`).join('');
+  }
+
+  function handleAgentIconUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      document.getElementById('agentFormIcon').value = ev.target.result;
+      hideAppErr('agentErrIcon');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  function openAgentModal(code) {
+    editingAgentCode = code || null;
+    ['agentErrName', 'agentErrCode', 'agentErrIcon', 'agentErrDesc', 'agentErrCaps', 'agentErrPrompts', 'agentErrScopeSel', 'agentErrTerm', 'agentErrOwnerDept', 'agentErrOwnerName', 'agentErrOwnerContact', 'agentErrSort'].forEach(hideAppErr);
+    scopeDeptsSel = new Set();
+    scopeUsersSel = new Set();
+    if (editingAgentCode) {
+      const a = topAgents.find(x => x.code === code);
+      document.getElementById('agentModalTitle').textContent = '编辑智能体';
+      document.getElementById('agentFormName').value = a.name || '';
+      document.getElementById('agentFormCode').value = a.code || '';
+      document.getElementById('agentFormCode').disabled = true;
+      document.getElementById('agentFormCode').style.color = '#909399';
+      document.getElementById('agentFormIcon').value = a.icon || '';
+      document.getElementById('agentFormDesc').value = a.desc || '';
+      document.getElementById('agentFormCaps').value = a.caps || '';
+      document.getElementById('agentFormOwnerDept').value = a.ownerDept || '';
+      document.getElementById('agentFormOwnerName').value = a.ownerName || '';
+      document.getElementById('agentFormOwnerContact').value = a.ownerContact || '';
+      const terms = a.terms || ['pc', 'app'];
+      document.getElementById('agentTermPc').checked = terms.indexOf('pc') !== -1;
+      document.getElementById('agentTermApp').checked = terms.indexOf('app') !== -1;
+      agentPromptsTmp = (a.prompts || []).slice();
+      agentScopeMode = a.scope === 'custom' ? 'custom' : 'company';
+      scopeDeptsSel = new Set(a.depts || []);
+      scopeUsersSel = new Set(a.users || []);
+      agentStatusOn = a.status === 'enabled';
+      document.getElementById('agentFormSort').value = a.sort || 1;
+    } else {
+      document.getElementById('agentModalTitle').textContent = '新增智能体';
+      document.getElementById('agentFormName').value = '';
+      document.getElementById('agentFormCode').value = '';
+      document.getElementById('agentFormCode').disabled = false;
+      document.getElementById('agentFormCode').style.color = '';
+      document.getElementById('agentFormIcon').value = '';
+      document.getElementById('agentFormDesc').value = '';
+      document.getElementById('agentFormCaps').value = '';
+      document.getElementById('agentFormOwnerDept').value = '';
+      document.getElementById('agentFormOwnerName').value = '';
+      document.getElementById('agentFormOwnerContact').value = '';
+      document.getElementById('agentTermPc').checked = true;
+      document.getElementById('agentTermApp').checked = true;
+      agentPromptsTmp = [''];
+      agentScopeMode = 'company';
+      agentStatusOn = true;
+      document.getElementById('agentFormSort').value = topAgents.length ? Math.max.apply(null, topAgents.map(a => a.sort || 0)) + 1 : 1;
+    }
+    selectAgentScope(agentScopeMode);
+    selectAgentStatus(agentStatusOn);
+    renderAgentPromptRows();
+    renderDeptSummary();
+    renderUserSummary();
+    document.getElementById('agentModal').style.display = 'flex';
+  }
+  function closeAgentModal() {
+    document.getElementById('agentModal').style.display = 'none';
+  }
+
+  function saveAgentItem() {
+    let ok = true;
+    const name = document.getElementById('agentFormName').value.trim();
+    const code = document.getElementById('agentFormCode').value.trim();
+    const icon = document.getElementById('agentFormIcon').value.trim();
+    const desc = document.getElementById('agentFormDesc').value.trim();
+    const caps = document.getElementById('agentFormCaps').value.trim();
+    const ownerDept = document.getElementById('agentFormOwnerDept').value.trim();
+    const ownerName = document.getElementById('agentFormOwnerName').value.trim();
+    const ownerContact = document.getElementById('agentFormOwnerContact').value.trim();
+    const prompts = agentPromptsTmp.map(p => String(p).trim()).filter(Boolean);
+    const sortVal = parseInt(document.getElementById('agentFormSort').value, 10);
+    const terms = [];
+    if (document.getElementById('agentTermPc').checked) terms.push('pc');
+    if (document.getElementById('agentTermApp').checked) terms.push('app');
+    if (!name) { showAppErr('agentErrName'); ok = false; }
+    if (!code) { showAppErr('agentErrCode'); ok = false; }
+    if (!icon) { showAppErr('agentErrIcon'); ok = false; }
+    if (!desc) { showAppErr('agentErrDesc'); ok = false; }
+    if (!caps) { showAppErr('agentErrCaps'); ok = false; }
+    if (!prompts.length) { showAppErr('agentErrPrompts'); ok = false; }
+    if (!terms.length) { showAppErr('agentErrTerm'); ok = false; }
+    if (ownerContact && !/^1[3-9]\d{9}$/.test(ownerContact) && !/^[\w.+-]+@[\w-]+(\.[\w-]+)+$/.test(ownerContact)) { showAppErr('agentErrOwnerContact'); ok = false; }
+    if (!sortVal || sortVal < 1) { showAppErr('agentErrSort'); ok = false; }
+    if (agentScopeMode === 'custom' && !scopeDeptsSel.size && !scopeUsersSel.size) {
+      showAppErr('agentErrScopeSel'); ok = false;
+    }
+    if (!ok) return;
+    if (editingAgentCode) {
+      if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(code)) {
+        showAppErr('agentErrCode', '编码只能包含字母、数字、下划线，且以字母开头');
+        return;
+      }
+      if (code !== editingAgentCode && topAgents.some(a => a.code === code)) {
+        showAppErr('agentErrCode', '该编码已存在');
+        return;
+      }
+      const a = topAgents.find(x => x.code === editingAgentCode);
+      Object.assign(a, {
+        code, name, icon, desc, caps, prompts, ownerDept, ownerName, ownerContact, terms,
+        sort: sortVal,
+        status: agentStatusOn ? 'enabled' : 'disabled',
+        scope: agentScopeMode,
+        depts: Array.from(scopeDeptsSel),
+        users: Array.from(scopeUsersSel)
+      });
+    } else {
+      if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(code)) {
+        showAppErr('agentErrCode', '编码只能包含字母、数字、下划线，且以字母开头');
+        return;
+      }
+      if (topAgents.some(a => a.code === code)) {
+        showAppErr('agentErrCode', '该编码已存在');
+        return;
+      }
+      topAgents.push({
+        code, name, icon, desc, caps, prompts, ownerDept, ownerName, ownerContact, terms,
+        sort: sortVal,
+        status: agentStatusOn ? 'enabled' : 'disabled',
+        scope: agentScopeMode,
+        depts: Array.from(scopeDeptsSel),
+        users: Array.from(scopeUsersSel)
+      });
+    }
+    saveTopAgents();
+    closeAgentModal();
+    renderAgentTable();
+  }
+
+  function deleteTopAgent(code) {
+    const a = topAgents.find(x => x.code === code);
+    if (!a) return;
+    showCommonConfirm('删除智能体', `确定删除智能体「${a.name}」吗？删除后工作台顶部将不再展示该智能体。`, () => {
+      topAgents = topAgents.filter(x => x.code !== code);
+      saveTopAgents();
+      renderAgentTable();
+    });
+  }
+
+  function renderTopAgents() {
+    topAgents.sort((x, y) => (x.sort || 999) - (y.sort || 999));
+    renderAgentTable();
+  }
+
+  renderTopAgents();
 </script>
 </body>
 </html>
