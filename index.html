@@ -3228,7 +3228,10 @@
   // ---- 菜单切换：进入快捷应用管理页 ----
   function openAppPage(el) {
     document.querySelectorAll('.menu-link').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
+    if (!el) {
+      el = Array.from(document.querySelectorAll('.submenu .menu-link')).find(m => m.textContent.trim() === '应用管理');
+    }
+    if (el) el.classList.add('active');
     document.getElementById('pageChannel').style.display = 'none';
     document.getElementById('pageAgents').style.display = 'none';
     document.getElementById('pageApps').style.display = 'block';
@@ -4187,6 +4190,9 @@
   }
 
   renderTopAgents();
+
+  // 进入页面/刷新后默认定位到应用管理
+  openAppPage();
 </script>
 </body>
 </html>
