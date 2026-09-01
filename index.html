@@ -213,12 +213,12 @@
     color: #606266;
     font-weight: 500;
     text-align: left;
-    padding: 11px 12px;
+    padding: 11px 14px;
     border-bottom: 1px solid #ebeef5;
     white-space: nowrap;
   }
   tbody td {
-    padding: 13px 12px;
+    padding: 14px 14px;
     border-bottom: 1px solid #f0f2f5;
     color: #303133;
     vertical-align: middle;
@@ -1123,15 +1123,13 @@
               <tr>
                 <th style="width:60px;">图标</th>
                 <th>应用名称</th>
-                <th style="width:100px;">应用分类</th>
                 <th style="width:110px;">上架终端</th>
                 <th>访问地址</th>
                 <th style="width:170px;">归属部门 / 负责人</th>
                 <th style="width:170px;">可见范围</th>
                 <th style="width:60px;">排序</th>
                 <th style="width:130px;">更新时间</th>
-                <th style="width:70px;">状态</th>
-                <th style="width:120px;">操作</th>
+                <th style="width:150px;">操作</th>
               </tr>
             </thead>
             <tbody id="appTbody"><!-- JS 渲染 --></tbody>
@@ -3386,7 +3384,7 @@
     const tbody = document.getElementById('appTbody');
     if (!tbody) return;
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:#c0c4cc;padding:36px 0;">暂无应用，点击右上角「新增应用」添加</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#c0c4cc;padding:36px 0;">暂无应用，点击右上角「新增应用」添加</td></tr>';
       return;
     }
     tbody.innerHTML = list.map(a => {
@@ -3397,15 +3395,13 @@
         : '<span style="color:#c0c4cc;">-</span>';
       return `<tr style="${disabled ? 'opacity:.55;' : ''}">
         <td>${renderAppIconCell(a)}</td>
-        <td style="font-weight:500;">${escHtml(a.name)}${a.desc ? `<div style="color:#909399;font-size:12px;font-weight:400;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(a.desc)}">${escHtml(a.desc)}</div>` : ''}</td>
-        <td style="color:#606266;white-space:nowrap;">${escHtml(a.dept)}</td>
+        <td style="font-weight:500;">${escHtml(a.name)}<span style="display:inline-block;font-size:11px;font-weight:400;color:#909399;background:#f4f4f5;border-radius:3px;padding:1px 6px;margin-left:6px;vertical-align:1px;">${escHtml(a.dept)}</span>${a.desc ? `<div style="color:#909399;font-size:12px;font-weight:400;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(a.desc)}">${escHtml(a.desc)}</div>` : ''}</td>
         <td style="white-space:nowrap;">${renderTermsCell(a.terms)}</td>
         <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${renderAppUrlCell(a)}</td>
         <td style="white-space:nowrap;">${ownerHtml}</td>
         <td>${renderScopeCell(a)}</td>
         <td>${a.sort}</td>
         <td style="color:#909399;font-size:12px;white-space:nowrap;">${renderTimeCell(a)}</td>
-        <td style="white-space:nowrap;">${disabled ? '<span style="color:#909399;">禁用</span>' : '<span style="color:#67c23a;">启用</span>'}</td>
         <td style="white-space:nowrap;">
           <span class="op-link" style="color:${disabled ? '#16a34a' : '#e6a23c'};" onclick="toggleAppStatus('${a.id}')" title="${disabled ? '启用该应用' : '禁用该应用'}">${disabled ? '启用' : '禁用'}</span>
           <span class="op-link" onclick="openAppModal('${a.id}')">编辑</span>
