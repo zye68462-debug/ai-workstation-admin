@@ -739,7 +739,6 @@
     display: inline-block; padding: 2px 8px; border-radius: 4px;
     font-size: 11px; margin: 1px 3px 1px 0;
   }
-  .app-scope-company { background: #e6f4ff; color: #1677ff; }
   .app-scope-dept { background: #f2f3f5; color: #4e5969; }
   .app-scope-user { background: #fff7e6; color: #d46b08; }
   .scope-clamp {
@@ -1144,28 +1143,8 @@
           <div class="filter-row">
             <div class="filter-item">
               <label>应用名称</label>
-              <input type="text" id="agentFName" placeholder="请输入应用名称" />
+              <input type="text" id="agentFName" placeholder="请输入应用名称" oninput="renderAgentTable()" />
             </div>
-            <div class="filter-item">
-              <label>可见范围</label>
-              <select id="agentFScope">
-                <option value="">全部范围</option>
-                <option value="company">全公司</option>
-                <option value="custom">指定部门/人员</option>
-              </select>
-            </div>
-            <div class="filter-item">
-              <label>状态</label>
-              <select id="agentFStatus">
-                <option value="">全部状态</option>
-                <option value="enabled">启用</option>
-                <option value="disabled">禁用</option>
-              </select>
-            </div>
-          </div>
-          <div class="filter-actions">
-            <button class="btn btn-primary" onclick="agentSearch()">查找</button>
-            <button class="btn btn-default" onclick="agentResetFilter()">清空</button>
           </div>
         </div>
 
@@ -1173,6 +1152,7 @@
         <div class="card table-card">
           <div class="table-head">
             <span class="title">工作台顶部应用列表</span>
+            <span style="color:#909399;font-size:12px;margin-left:12px;">某个智能体的权限还需细分时，才需要在此模块配置</span>
             <div class="actions">
               <button class="btn btn-primary" onclick="openAgentModal()">+ 新增应用</button>
             </div>
@@ -1180,13 +1160,12 @@
           <table>
             <thead>
               <tr>
-                <th style="width:60px;">序号</th>
-                <th style="width:260px;">应用名称</th>
-                <th style="width:140px;">编码</th>
-                <th style="width:110px;">上架终端</th>
+                <th style="width:50px;">序号</th>
+                <th style="width:250px;">应用名称</th>
+                <th style="width:150px;">平台类型</th>
+                <th style="width:110px;">服务商</th>
                 <th style="width:170px;">归属部门 / 负责人</th>
-                <th style="width:170px;">可见范围</th>
-                <th style="width:70px;">状态</th>
+                <th style="width:150px;">可见范围</th>
                 <th style="width:120px;">操作</th>
               </tr>
             </thead>
@@ -1638,85 +1617,46 @@
         <span class="modal-close" onclick="closeAgentModal()">×</span>
       </div>
       <div class="modal-body">
+        <!-- 智能体信息：从智能体广场拉取，只读展示 -->
         <div class="form-row">
-          <label class="form-label required">应用名称</label>
-          <input type="text" class="form-control" id="agentFormName" placeholder="如：智能费控助手" oninput="hideAppErr('agentErrName')" />
-        </div>
-        <div class="conn-err" id="agentErrName">请输入应用名称</div>
-        <div class="form-row">
-          <label class="form-label required">应用编码</label>
-          <input type="text" class="form-control" id="agentFormCode" placeholder="如：agent_fi" oninput="hideAppErr('agentErrCode')" />
-        </div>
-        <div class="conn-err" id="agentErrCode">请输入应用编码</div>
-        <div class="form-row">
-          <label class="form-label required">图标URL</label>
-          <div class="conn-url-row">
-            <input type="text" class="form-control" id="agentFormIcon" placeholder="http(s)://..." oninput="hideAppErr('agentErrIcon');syncAgentIconPreview()" />
-            <button type="button" class="btn btn-default conn-upload-btn" onclick="document.getElementById('agentIconFile').click()">上传图片</button>
-            <input type="file" id="agentIconFile" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none" onchange="handleAgentIconUpload(event)" />
-          </div>
-          <img id="agentIconPreview" style="display:none;width:40px;height:40px;border-radius:8px;object-fit:cover;margin-top:8px;border:1px solid #ebeef5;background:#fff;" onerror="this.style.display='none'" />
-        </div>
-        <div class="conn-err" id="agentErrIcon">请上传或填写图标地址</div>
-        <div class="form-tip-inline" style="margin:-6px 0 16px 110px;">
-          <span class="tip-ico">ⓘ</span><span>展示在工作台顶部的应用头像；可直接填写图片地址，或点击「上传图片」选择本地文件；支持 PNG / JPG / SVG / WebP</span>
-        </div>
-        <div class="form-row">
-          <label class="form-label required">简介</label>
-          <textarea class="form-control" id="agentFormDesc" rows="2" placeholder="一句话描述该业务支持中心是做什么的、服务谁，如：为固收部门提供投研数据查询、产品信息检索与业务流程支持" oninput="hideAppErr('agentErrDesc')"></textarea>
-        </div>
-        <div class="conn-err" id="agentErrDesc">请输入简介</div>
-        <div class="form-row">
-          <label class="form-label required">业务能力</label>
-          <textarea class="form-control" id="agentFormCaps" rows="3" placeholder="清晰、简洁地列出核心能力，每条以动词开头，用分号分隔。如：查询债券行情与估值；检索固收产品说明书；解答固收业务流程问题；生成投研日报摘要" oninput="hideAppErr('agentErrCaps')"></textarea>
-        </div>
-        <div class="conn-err" id="agentErrCaps">请输入业务能力</div>
-        <div class="form-row">
-          <label class="form-label required">快捷提示词</label>
+          <label class="form-label required">拉取智能体</label>
           <div style="flex:1;min-width:0;">
-            <div id="agentPromptsWrap"></div>
-            <button type="button" class="btn btn-default" style="margin-top:8px;" onclick="addAgentPrompt()">+ 添加提示词</button>
-          </div>
-        </div>
-        <div class="conn-err" id="agentErrPrompts">请至少填写一条提示词</div>
-        <div class="form-tip-inline" style="margin:-6px 0 16px 110px;">
-          <span class="tip-ico">ⓘ</span><span>用户在首页点击应用卡片后展示这些快捷提示词，点击即可发起对话</span>
-        </div>
-        <div class="form-row">
-          <label class="form-label required">可见范围</label>
-          <div class="seg-group" id="agentScopeSeg">
-            <button type="button" class="seg-item active" onclick="selectAgentScope('company')">全公司</button>
-            <button type="button" class="seg-item" onclick="selectAgentScope('custom')">指定部门/人员</button>
-          </div>
-        </div>
-        <div class="form-tip-inline" style="margin:-6px 0 16px 110px;">
-          <span class="tip-ico">ⓘ</span><span>全公司：全员可见该应用；指定部门/人员：部门与人员可同时配置，所选部门内人员及所选人员可见</span>
-        </div>
-        <div id="agentScopeSection" style="display:none;">
-          <div class="form-row">
-            <label class="form-label">选择部门</label>
-            <div style="flex:1;min-width:0;">
-              <button type="button" class="btn btn-default" onclick="openDeptModal()">选择部门</button>
-              <div id="agentDeptSummary" style="margin-top:8px;font-size:12px;color:#909399;"></div>
+            <div id="agentPickEmpty" style="border:1px dashed #dcdfe6;border-radius:8px;padding:18px 16px;text-align:center;background:#fafbfc;">
+              <div style="color:#909399;font-size:12px;margin-bottom:10px;">应用从「智能体广场」拉取，名称、图标、简介均继承广场数据</div>
+              <button type="button" class="btn btn-primary" onclick="openPlazaModal()">从智能体广场选择</button>
+            </div>
+            <div id="agentPickCard" style="display:none;border:1px solid #ebeef5;border-radius:8px;padding:12px 14px;background:#fafbfc;">
+              <div style="display:flex;align-items:flex-start;gap:12px;">
+                <img id="agentPickIcon" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex:none;background:#fff;border:1px solid #ebeef5;" onerror="this.style.visibility='hidden'" />
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span id="agentPickName" style="font-weight:600;font-size:15px;color:#303133;"></span>
+                    <span id="agentPickPlatform" style="background:#e8f3ff;color:#1890ff;font-size:12px;padding:2px 8px;border-radius:4px;"></span>
+                  </div>
+                  <div id="agentPickDesc" style="color:#909399;font-size:12px;margin-top:6px;line-height:1.6;"></div>
+                  <div style="color:#b0b5bd;font-size:12px;margin-top:6px;">ID：<span id="agentPickId"></span>　服务商：<span id="agentPickVendor"></span></div>
+                </div>
+                <button type="button" class="btn btn-default" style="flex:none;" onclick="openPlazaModal()">重选</button>
+              </div>
             </div>
           </div>
-          <div class="form-row">
-            <label class="form-label">选择人员</label>
-            <div style="flex:1;min-width:0;">
-              <button type="button" class="btn btn-default" onclick="openUserModal()">选择人员</button>
-              <div id="agentUserSummary" style="margin-top:8px;font-size:12px;color:#909399;"></div>
-            </div>
+        </div>
+        <div class="conn-err" id="agentErrPick">请先从「智能体广场」拉取一个智能体</div>
+        <div class="form-row">
+          <label class="form-label">选择部门</label>
+          <div style="flex:1;min-width:0;">
+            <button type="button" class="btn btn-default" onclick="openDeptModal()">选择部门</button>
+            <div id="agentDeptSummary" style="margin-top:8px;font-size:12px;color:#909399;"></div>
           </div>
-          <div class="conn-err" id="agentErrScopeSel">请至少选择一个部门或一名人员</div>
         </div>
         <div class="form-row">
-          <label class="form-label required">上架终端</label>
-          <div style="flex:1;min-width:0;display:flex;gap:18px;align-items:center;">
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:#606266;"><input type="checkbox" id="agentTermPc" onchange="hideAppErr('agentErrTerm')" />PC端</label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:#606266;"><input type="checkbox" id="agentTermApp" onchange="hideAppErr('agentErrTerm')" />APP端</label>
+          <label class="form-label">选择人员</label>
+          <div style="flex:1;min-width:0;">
+            <button type="button" class="btn btn-default" onclick="openUserModal()">选择人员</button>
+            <div id="agentUserSummary" style="margin-top:8px;font-size:12px;color:#909399;"></div>
           </div>
         </div>
-        <div class="conn-err" id="agentErrTerm">请至少选择一个上架终端</div>
+        <div class="conn-err" id="agentErrScopeSel">部门和人员至少需要配置一项</div>
         <div class="form-row">
           <label class="form-label">归属部门</label>
           <input type="text" class="form-control" id="agentFormOwnerDept" placeholder="如：固定收益部" oninput="hideAppErr('agentErrOwnerDept')" />
@@ -1732,21 +1672,6 @@
           <input type="text" class="form-control" id="agentFormOwnerContact" placeholder="手机号或邮箱，如：zhangsan@company.com" oninput="hideAppErr('agentErrOwnerContact')" />
         </div>
         <div class="conn-err" id="agentErrOwnerContact">请输入正确的手机号或邮箱</div>
-        <div class="form-row">
-          <label class="form-label required">排序</label>
-          <input type="number" class="form-control" id="agentFormSort" value="1" min="1" style="width:120px;flex:none;" oninput="hideAppErr('agentErrSort')" />
-        </div>
-        <div class="conn-err" id="agentErrSort">请填写不小于 1 的排序值</div>
-        <div class="form-tip-inline" style="margin:-6px 0 16px 110px;">
-          <span class="tip-ico">ⓘ</span><span>数值越小应用越靠前；允许重复，重复时先创建的在前</span>
-        </div>
-        <div class="form-row">
-          <label class="form-label required">状态</label>
-          <div class="seg-group" id="agentStatusSeg">
-            <button type="button" class="seg-item active" onclick="selectAgentStatus(true)">启用</button>
-            <button type="button" class="seg-item" onclick="selectAgentStatus(false)">禁用</button>
-          </div>
-        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-default" onclick="closeAgentModal()">取消</button>
@@ -1827,6 +1752,50 @@
       <div class="modal-footer">
         <button class="btn btn-default" onclick="closeUserModal(false)">取消</button>
         <button class="btn btn-primary" onclick="closeUserModal(true)">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 智能体广场选择弹框（拉取智能体） -->
+<div class="modal-mask" id="plazaModal" style="display:none;z-index:1280;overflow:auto;">
+  <div class="modal-wrap" style="width:1280px;max-width:94vw;max-height:none;margin:24px auto;">
+    <div class="modal" style="max-height:none;">
+      <div class="modal-header">
+        <span class="modal-title">从智能体广场拉取</span>
+        <span class="modal-close" onclick="closePlazaModal()">×</span>
+      </div>
+      <div class="modal-body" style="padding:0;display:flex;flex-direction:column;height:760px;">
+        <div style="padding:12px 16px;border-bottom:1px solid #ebeef5;background:#fff;">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+            <label style="color:#606266;font-size:13px;white-space:nowrap;">平台类型</label>
+            <select class="form-control" id="plazaFPlatform" style="width:190px;height:34px;flex:none;">
+              <option value="Coze 标准智能体">Coze 标准智能体</option>
+              <option value="Coze 编程智能体">Coze 编程智能体</option>
+              <option value="Coze 工作流">Coze 工作流</option>
+              <option value="Dify 智能体">Dify 智能体</option>
+              <option value="Dify 工作流">Dify 工作流</option>
+              <option value="黄小西 智能体">黄小西 智能体</option>
+              <option value="OpenClaw 智能体">OpenClaw 智能体</option>
+              <option value="RClaw 智能体">RClaw 智能体</option>
+            </select>
+            <label style="color:#606266;font-size:13px;white-space:nowrap;">智能体名称</label>
+            <input type="text" class="form-control" id="plazaFName" placeholder="输入智能体名称" style="width:200px;height:34px;flex:none;" />
+            <button class="btn btn-primary" onclick="plazaSearch()">查找</button>
+            <button class="btn btn-default" onclick="plazaResetFilter()">清空</button>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <label style="color:#606266;font-size:13px;white-space:nowrap;flex:none;">服务商</label>
+            <div id="plazaVendorRow" style="flex:1;display:flex;gap:16px;align-items:center;flex-wrap:nowrap;overflow-x:auto;min-width:0;"></div>
+            <span class="op-link" style="flex:none;" onclick="plazaVendorAll(true)">全选</span>
+            <span class="op-link" style="flex:none;" onclick="plazaVendorAll(false)">清空</span>
+          </div>
+        </div>
+        <div id="plazaGrid" style="flex:1;overflow-y:auto;padding:16px;display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;align-content:start;background:#fafbfc;"></div>
+        <div style="padding:10px 16px;border-top:1px solid #ebeef5;color:#909399;font-size:12px;background:#fff;">共 <span id="plazaCount">0</span> 个智能体；灰色「已拉取」表示已加入业务支持中心配置</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closePlazaModal()">取消</button>
       </div>
     </div>
   </div>
@@ -3881,7 +3850,8 @@
   renderAppFilterDept();
 
   // ============ 业务支持中心配置（工作台顶部应用） ============
-  const AGENTS_KEY = 'ai_workstation_admin_top_agents_v5';
+  // 应用内容信息（名称/图标/简介/平台/服务商）从「智能体广场」拉取且只读，本模块只管理权限配置
+  const AGENTS_KEY = 'ai_workstation_admin_top_agents_v9';
   // 头像复用 AI工作台-app端/AI工作台pc版本/images 下的现成素材，与标准版本业务支持中心保持一致
   const DEFAULT_AGENT_ICONS = {
     agent_ib: 'images/Avatar1.png',
@@ -3892,50 +3862,72 @@
     agent_inst: 'images/Avatar6.png',
     agent_rs: 'images/Avatar8.png'
   };
+  // 智能体广场数据源（实际环境中由智能体广场接口提供）
+  // 平台类型字典（与智能体广场保持一致）
+  const PLAZA_PLATFORMS = ['Coze 标准智能体', 'Coze 编程智能体', 'Coze 工作流', 'Dify 智能体', 'Dify 工作流', '黄小西 智能体', 'OpenClaw 智能体', 'RClaw 智能体'];
+  // 服务商字典（与智能体广场保持一致）
+  const PLAZA_VENDORS = [
+    { name: 'RClaw测试', code: 'rclaw' },
+    { name: 'rclaw', code: 'rclaw' },
+    { name: '涵交Coze', code: 'coze' },
+    { name: 'OpenClaw', code: 'openclaw' },
+    { name: 'MateClaw', code: 'mateclaw' }
+  ];
+  const PLAZA_AGENTS = [
+    { id: 'ag_travel', name: '旅服智能体', icon: DEFAULT_AGENT_ICONS.agent_rt, platform: 'Coze 标准智能体', vendor: '涵交Coze', desc: '为旅服业务提供智能客服与出行服务智能体卡片支持' },
+    { id: 'ag_ib', name: '投行支持中心', icon: DEFAULT_AGENT_ICONS.agent_ib, platform: 'Coze 标准智能体', vendor: 'RClaw测试', desc: '为投行部门提供项目管理、尽调材料与发行承销流程支持' },
+    { id: 'ag_cs', name: '智能客服助手', icon: DEFAULT_AGENT_ICONS.agent_am, platform: 'Coze 标准智能体', vendor: '涵交Coze', desc: '提供客户咨询应答、工单分流与常见问题自助解答' },
+    { id: 'ag_mkt', name: '营销文案助手', icon: DEFAULT_AGENT_ICONS.agent_st, platform: 'Coze 标准智能体', vendor: 'RClaw测试', desc: '提供营销活动策划、宣传文案撰写与海报文案优化' },
+    { id: 'ag_ct', name: '合同审查助手', icon: DEFAULT_AGENT_ICONS.agent_inst, platform: 'Coze 标准智能体', vendor: 'rclaw', desc: '提供合同条款审查、风险点提示与修订建议生成' },
+    { id: 'ag_hr', name: '培训问答助手', icon: DEFAULT_AGENT_ICONS.agent_rs, platform: 'Coze 标准智能体', vendor: 'MateClaw', desc: '提供内部培训课程咨询、制度学习问答与考试辅导' },
+    { id: 'ag_am', name: '资管支持中心', icon: DEFAULT_AGENT_ICONS.agent_am, platform: 'Dify 智能体', vendor: 'OpenClaw', desc: '为资管部门提供产品净值查询、组合分析与估值清算支持' },
+    { id: 'ag_rt', name: '零售支持中心', icon: DEFAULT_AGENT_ICONS.agent_rt, platform: 'Coze 工作流', vendor: '涵交Coze', desc: '为零售业务线提供网点运营、客户服务与产品适当性支持' },
+    { id: 'ag_fi', name: '固收支持中心', icon: DEFAULT_AGENT_ICONS.agent_fi, platform: 'Dify 工作流', vendor: 'MateClaw', desc: '为固收部门提供投研数据查询、产品信息检索与业务流程支持' },
+    { id: 'ag_st', name: '销交支持中心', icon: DEFAULT_AGENT_ICONS.agent_st, platform: 'OpenClaw 智能体', vendor: 'OpenClaw', desc: '为销售交易部门提供市场行情、交易策略与对手方信息支持' },
+    { id: 'ag_inst', name: '机构支持中心', icon: DEFAULT_AGENT_ICONS.agent_inst, platform: 'RClaw 智能体', vendor: 'RClaw测试', desc: '为机构业务部门提供客户画像、商机跟进与服务方案支持' },
+    { id: 'ag_rs', name: '研究支持中心', icon: DEFAULT_AGENT_ICONS.agent_rs, platform: 'Coze 编程智能体', vendor: 'rclaw', desc: '为全员投研场景提供研报检索、行业数据与分析师观点查询' },
+    { id: 'ag_comp', name: '合规问答助手', icon: DEFAULT_AGENT_ICONS.agent_ib, platform: '黄小西 智能体', vendor: 'MateClaw', desc: '提供合规制度检索、业务合规性咨询与风险提示' },
+    { id: 'ag_risk', name: '风控监测助手', icon: DEFAULT_AGENT_ICONS.agent_rt, platform: 'Dify 智能体', vendor: 'rclaw', desc: '提供风险指标监测、授信额度查询与信用风险评估支持' }
+  ];
   const DEFAULT_TOP_AGENTS = [
-    { code: 'agent_ib', name: '投行支持中心', icon: DEFAULT_AGENT_ICONS.agent_ib, desc: '为投行部门提供项目管理、尽调材料与发行承销流程支持', caps: '查询投行项目进度；检索尽调清单与底稿模板；解答发行承销与持续督导流程问题', prompts: ['IPO项目尽调需要哪些材料？', '如何查询债券发行项目的审核进度？'], sort: 1, status: 'enabled', scope: 'company', depts: [], users: [], terms: ['pc', 'app'], ownerDept: '投资银行部', ownerName: '陈明', ownerContact: 'chenming@company.com' },
-    { code: 'agent_am', name: '资管支持中心', icon: DEFAULT_AGENT_ICONS.agent_am, desc: '为资管部门提供产品净值查询、组合分析与估值清算支持', caps: '查询资管产品净值与收益；检索组合持仓分析；解答估值清算与信息披露问题', prompts: ['如何查询资管产品最新净值？', '某组合的持仓明细在哪里看？'], sort: 2, status: 'enabled', scope: 'company', depts: [], users: [], terms: ['pc', 'app'], ownerDept: '资产管理部', ownerName: '王芳', ownerContact: 'wangfang@company.com' },
-    { code: 'agent_rt', name: '零售支持中心', icon: DEFAULT_AGENT_ICONS.agent_rt, desc: '为零售业务线提供网点运营、客户服务与产品适当性支持', caps: '查询零售客户服务话术与营销方案；检索产品适当性要求；解答网点业务流程与合规问题', prompts: ['向客户介绍理财产品要讲清哪些要点？', '客户投诉的处理流程是什么？'], sort: 3, status: 'enabled', scope: 'company', depts: [], users: [], terms: ['pc', 'app'], ownerDept: '财富管理总部', ownerName: '刘洋', ownerContact: 'liuyang@company.com' },
-    { code: 'agent_fi', name: '固收支持中心', icon: DEFAULT_AGENT_ICONS.agent_fi, desc: '为固收部门提供投研数据查询、产品信息检索与业务流程支持', caps: '查询债券行情与估值；检索固收产品说明书；解答固收业务流程问题；生成投研日报摘要', prompts: ['如何查询某只债券的估值？', '固收本周有哪些新发产品？'], sort: 4, status: 'enabled', scope: 'company', depts: [], users: [], terms: ['pc', 'app'], ownerDept: '固定收益部', ownerName: '张三', ownerContact: 'zhangsan@company.com' },
-    { code: 'agent_st', name: '销交支持中心', icon: DEFAULT_AGENT_ICONS.agent_st, desc: '为销售交易部门提供市场行情、交易策略与对手方信息支持', caps: '查询实时行情与资金面；检索交易策略与历史成交；解答对手方管理与交易执行问题', prompts: ['今天资金面行情怎么样？', '某对手方的授信额度在哪里查？'], sort: 5, status: 'enabled', scope: 'company', depts: [], users: [], terms: ['pc', 'app'], ownerDept: '销售交易部', ownerName: '赵磊', ownerContact: 'zhaolei@company.com' },
-    { code: 'agent_inst', name: '机构支持中心', icon: DEFAULT_AGENT_ICONS.agent_inst, desc: '为机构业务部门提供客户画像、商机跟进与服务方案支持', caps: '查询机构客户画像与跟进记录；检索商机与合作方案模板；解答机构开户与托管业务问题', prompts: ['某机构客户最近的跟进情况？', '机构客户开户流程是什么？'], sort: 6, status: 'enabled', scope: 'company', depts: [], users: [], terms: ['pc', 'app'], ownerDept: '机构业务部', ownerName: '孙悦', ownerContact: 'sunyue@company.com' },
-    { code: 'agent_rs', name: '研究支持中心', icon: DEFAULT_AGENT_ICONS.agent_rs, desc: '为全员投研场景提供研报检索、行业数据与分析师观点查询', caps: '检索研究报告与分析师观点；查询行业数据与盈利预测；生成研报简报与晨会摘要', prompts: ['新能源行业最近有哪些新研报？', '帮我总结今天的晨会要点'], sort: 7, status: 'enabled', scope: 'company', depts: [], users: [], terms: ['pc', 'app'], ownerDept: '研究所', ownerName: '周谦', ownerContact: 'zhouqian@company.com' }
+    { agentId: 'ag_ib', name: '投行支持中心', icon: DEFAULT_AGENT_ICONS.agent_ib, platform: 'Coze 标准智能体', vendor: 'RClaw测试', desc: '为投行部门提供项目管理、尽调材料与发行承销流程支持', depts: ['投资银行一部', '投资银行二部'], users: [], ownerDept: '投资银行部', ownerName: '陈明', ownerContact: 'chenming@company.com' },
+    { agentId: 'ag_am', name: '资管支持中心', icon: DEFAULT_AGENT_ICONS.agent_am, platform: 'Dify 智能体', vendor: 'OpenClaw', desc: '为资管部门提供产品净值查询、组合分析与估值清算支持', depts: ['资产管理一部', '资产管理二部'], users: [], ownerDept: '资产管理部', ownerName: '王芳', ownerContact: 'wangfang@company.com' },
+    { agentId: 'ag_rt', name: '零售支持中心', icon: DEFAULT_AGENT_ICONS.agent_rt, platform: 'Coze 工作流', vendor: '涵交Coze', desc: '为零售业务线提供网点运营、客户服务与产品适当性支持', depts: ['财富管理部'], users: ['张三'], ownerDept: '财富管理总部', ownerName: '刘洋', ownerContact: 'liuyang@company.com' },
+    { agentId: 'ag_fi', name: '固收支持中心', icon: DEFAULT_AGENT_ICONS.agent_fi, platform: 'Dify 工作流', vendor: 'MateClaw', desc: '为固收部门提供投研数据查询、产品信息检索与业务流程支持', depts: ['固定收益部'], users: [], ownerDept: '固定收益部', ownerName: '张三', ownerContact: 'zhangsan@company.com' },
+    { agentId: 'ag_st', name: '销交支持中心', icon: DEFAULT_AGENT_ICONS.agent_st, platform: 'OpenClaw 智能体', vendor: 'OpenClaw', desc: '为销售交易部门提供市场行情、交易策略与对手方信息支持', depts: [], users: ['孙七', '钱八'], ownerDept: '销售交易部', ownerName: '赵磊', ownerContact: 'zhaolei@company.com' },
+    { agentId: 'ag_inst', name: '机构支持中心', icon: DEFAULT_AGENT_ICONS.agent_inst, platform: 'RClaw 智能体', vendor: 'RClaw测试', desc: '为机构业务部门提供客户画像、商机跟进与服务方案支持', depts: ['机构经纪部', '金融同业部'], users: [], ownerDept: '机构业务部', ownerName: '孙悦', ownerContact: 'sunyue@company.com' },
+    { agentId: 'ag_rs', name: '研究支持中心', icon: DEFAULT_AGENT_ICONS.agent_rs, platform: 'Coze 编程智能体', vendor: 'rclaw', desc: '为全员投研场景提供研报检索、行业数据与分析师观点查询', depts: ['研究所'], users: [], ownerDept: '研究所', ownerName: '周谦', ownerContact: 'zhouqian@company.com' }
   ];
   let topAgents = [];
   try { topAgents = JSON.parse(localStorage.getItem(AGENTS_KEY) || ''); } catch (e) { topAgents = null; }
   if (!Array.isArray(topAgents)) topAgents = JSON.parse(JSON.stringify(DEFAULT_TOP_AGENTS));
 
   function saveTopAgents() {
-    try { localStorage.setItem(AGENTS_KEY, JSON.stringify(topAgents)); } catch (e) { showCommonTip('保存失败', '本地存储容量不足（上传的图标图片过大）。请改用图片 URL，或减小上传图片尺寸后重试。'); }
+    try { localStorage.setItem(AGENTS_KEY, JSON.stringify(topAgents)); } catch (e) { showCommonTip('保存失败', '本地存储容量不足，请重试。'); }
   }
 
-  let editingAgentCode = null;
-  let agentScopeMode = 'company';
-  let agentStatusOn = true;
-  let agentPromptsTmp = [];
+  function getPlazaAgent(id) {
+    return PLAZA_AGENTS.find(x => x.id === id) || null;
+  }
 
+  let editingAgentId = null;
+  let pickedAgentId = null;
   function renderAgentTable() {
     const kw = (document.getElementById('agentFName').value || '').trim().toLowerCase();
-    const sc = document.getElementById('agentFScope').value;
-    const st = document.getElementById('agentFStatus').value;
-    const rows = topAgents.filter(a => {
-      if (kw && (a.name || '').toLowerCase().indexOf(kw) === -1) return false;
-      if (sc && a.scope !== sc) return false;
-      if (st && a.status !== st) return false;
-      return true;
-    }).sort((x, y) => (x.sort || 999) - (y.sort || 999));
+    const rows = topAgents.filter(a => !kw || (a.name || '').toLowerCase().indexOf(kw) !== -1);
     const tbody = document.getElementById('agentTbody');
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#c0c4cc;padding:36px 0;">暂无应用，点击右上角「新增应用」添加</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#c0c4cc;padding:36px 0;">暂无应用，点击右上角「新增应用」添加</td></tr>';
       return;
     }
     tbody.innerHTML = rows.map((a, i) => {
-      const esc = a.code.replace(/'/g, "\\'");
-      const disabled = a.status !== 'enabled';
-      const scopeHtml = a.scope === 'company'
-        ? '<span class="app-scope-tag app-scope-company">全公司</span>'
-        : `<span class="app-scope-tag app-scope-dept" title="查看可见范围详情" style="cursor:pointer;" onclick="showAgentScope('${esc}')">指定范围</span>`;
-      return `<tr style="${disabled ? 'opacity:.55;' : ''}">
+      const esc = a.agentId.replace(/'/g, "\\'");
+      const scopeText = [...orgCollapsedList(new Set(a.depts || [])).map(d => deptLabel(d)), ...(a.users || [])].join('、');
+      const scopeTip = scopeText.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      const scopeHtml = scopeText
+        ? `<div class="scope-clamp" title="${scopeTip}" style="cursor:pointer;" onclick="showAgentScope('${esc}')">${scopeTip}</div>`
+        : '<span style="color:#c0c4cc;">-</span>';
+      return `<tr>
         <td>${i + 1}</td>
         <td>
           <div style="display:flex;align-items:center;gap:10px;">
@@ -3943,13 +3935,11 @@
             <div style="font-weight:500;">${escHtml(a.name)}${a.desc ? `<div style="color:#909399;font-size:12px;font-weight:400;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(a.desc)}">${escHtml(a.desc)}</div>` : ''}</div>
           </div>
         </td>
-        <td style="color:#909399;">${escHtml(a.code)}</td>
-        <td style="white-space:nowrap;">${renderTermsCell(a.terms)}</td>
+        <td><span style="background:#e8f3ff;color:#1890ff;font-size:12px;padding:2px 8px;border-radius:4px;">${escHtml(a.platform || '-')}</span></td>
+        <td style="color:#606266;">${escHtml(a.vendor || '-')}</td>
         <td style="white-space:nowrap;">${(a.ownerDept || a.ownerName) ? `<div style="color:#606266;">${escHtml(a.ownerDept) || '-'}<span style="color:#909399;"> · ${escHtml(a.ownerName) || '-'}</span></div><div style="color:#909399;font-size:12px;">${escHtml(a.ownerContact)}</div>` : '<span style="color:#c0c4cc;">-</span>'}</td>
         <td>${scopeHtml}</td>
-        <td style="white-space:nowrap;">${disabled ? '<span style="color:#909399;">禁用</span>' : '<span style="color:#67c23a;">启用</span>'}</td>
         <td style="white-space:nowrap;">
-          <span class="op-link" style="color:${disabled ? '#16a34a' : '#e6a23c'};" onclick="toggleAgentStatus('${esc}')" title="${disabled ? '启用该应用' : '禁用该应用'}">${disabled ? '启用' : '禁用'}</span>
           <span class="op-link" onclick="openAgentModal('${esc}')">编辑</span>
           <span class="op-link" style="color:#f56c6c;" onclick="deleteTopAgent('${esc}')">删除</span>
         </td>
@@ -3957,16 +3947,8 @@
     }).join('');
   }
 
-  function agentSearch() { renderAgentTable(); }
-  function agentResetFilter() {
-    document.getElementById('agentFName').value = '';
-    document.getElementById('agentFScope').value = '';
-    document.getElementById('agentFStatus').value = '';
-    renderAgentTable();
-  }
-
-  function showAgentScope(code) {
-    const a = topAgents.find(x => x.code === code);
+  function showAgentScope(agentId) {
+    const a = topAgents.find(x => x.agentId === agentId);
     if (!a) return;
     const ds = orgCollapsedList(new Set(a.depts || []));
     const us = a.users || [];
@@ -3978,118 +3960,146 @@
     showCommonTip(`「${a.name}」可见范围`, html);
   }
 
-  function selectAgentScope(mode) {
-    agentScopeMode = mode;
-    document.querySelectorAll('#agentScopeSeg .seg-item').forEach((b, i) => {
-      b.classList.toggle('active', (i === 0) === (mode === 'company'));
-    });
-    document.getElementById('agentScopeSection').style.display = mode === 'custom' ? '' : 'none';
-    hideAppErr('agentErrScopeSel');
+  // ============ 智能体广场选择弹框 ============
+  let plazaVendorsSel = new Set();
+  let plazaAppliedName = '';
+  let plazaAppliedPlatform = '';
+
+  function openPlazaModal() {
+    document.getElementById('plazaFName').value = '';
+    document.getElementById('plazaFPlatform').value = PLAZA_PLATFORMS[0];
+    plazaAppliedName = '';
+    plazaAppliedPlatform = PLAZA_PLATFORMS[0];
+    plazaVendorsSel = new Set(PLAZA_VENDORS.map(v => v.name));
+    renderPlazaVendorRow();
+    renderPlazaGrid();
+    document.getElementById('plazaModal').style.display = 'flex';
   }
-  function selectAgentStatus(on) {
-    agentStatusOn = on;
-    document.querySelectorAll('#agentStatusSeg .seg-item').forEach((b, i) => {
-      b.classList.toggle('active', (i === 0) === on);
-    });
+  function closePlazaModal() {
+    document.getElementById('plazaModal').style.display = 'none';
   }
 
-  function addAgentPrompt() {
-    agentPromptsTmp.push('');
-    renderAgentPromptRows();
-    const inputs = document.querySelectorAll('#agentPromptsWrap input');
-    if (inputs.length) inputs[inputs.length - 1].focus();
+  function plazaSearch() {
+    plazaAppliedName = (document.getElementById('plazaFName').value || '').trim().toLowerCase();
+    plazaAppliedPlatform = document.getElementById('plazaFPlatform').value;
+    renderPlazaGrid();
   }
-  function removeAgentPrompt(i) {
-    agentPromptsTmp.splice(i, 1);
-    renderAgentPromptRows();
+  function plazaResetFilter() {
+    document.getElementById('plazaFName').value = '';
+    document.getElementById('plazaFPlatform').value = PLAZA_PLATFORMS[0];
+    plazaAppliedName = '';
+    plazaAppliedPlatform = PLAZA_PLATFORMS[0];
+    plazaVendorsSel = new Set(PLAZA_VENDORS.map(v => v.name));
+    renderPlazaVendorRow();
+    renderPlazaGrid();
   }
-  function updateAgentPrompt(i, v) {
-    agentPromptsTmp[i] = v;
-    hideAppErr('agentErrPrompts');
+  function plazaVendorAll(on) {
+    plazaVendorsSel = on ? new Set(PLAZA_VENDORS.map(v => v.name)) : new Set();
+    renderPlazaVendorRow();
+    renderPlazaGrid();
   }
-  function renderAgentPromptRows() {
-    const wrap = document.getElementById('agentPromptsWrap');
-    if (!agentPromptsTmp.length) {
-      wrap.innerHTML = '<div style="color:#909399;font-size:12px;padding:4px 0;">暂无提示词，请添加</div>';
+  function togglePlazaVendor(name) {
+    if (plazaVendorsSel.has(name)) plazaVendorsSel.delete(name); else plazaVendorsSel.add(name);
+    renderPlazaGrid();
+  }
+
+  function renderPlazaVendorRow() {
+    document.getElementById('plazaVendorRow').innerHTML = PLAZA_VENDORS.map(v => `
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#303133;white-space:nowrap;">
+        <input type="checkbox" ${plazaVendorsSel.has(v.name) ? 'checked' : ''} onchange="togglePlazaVendor('${escHtml(v.name)}')" />
+        <span style="font-weight:600;">${escHtml(v.name)}</span>
+        <span style="background:#e8f3ff;color:#1890ff;font-size:11px;padding:1px 6px;border-radius:4px;">${escHtml(v.code)}</span>
+      </label>`).join('');
+  }
+
+  function renderPlazaGrid() {
+    const list = PLAZA_AGENTS.filter(a => {
+      if (plazaAppliedName && (a.name || '').toLowerCase().indexOf(plazaAppliedName) === -1) return false;
+      if (plazaAppliedPlatform && a.platform !== plazaAppliedPlatform) return false;
+      if (!plazaVendorsSel.has(a.vendor)) return false;
+      return true;
+    });
+    const grid = document.getElementById('plazaGrid');
+    document.getElementById('plazaCount').textContent = list.length;
+    if (!list.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#c0c4cc;padding:48px 0;">没有符合条件的智能体</div>';
       return;
     }
-    wrap.innerHTML = agentPromptsTmp.map((p, i) => `
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <input type="text" class="form-control" value="${String(p).replace(/"/g, '&quot;')}" placeholder="如：如何提交差旅费报销？" oninput="updateAgentPrompt(${i}, this.value)" />
-        <button type="button" class="btn btn-default" style="flex:none;" onclick="removeAgentPrompt(${i})">删除</button>
-      </div>`).join('');
+    grid.innerHTML = list.map(a => {
+      const picked = pickedAgentId === a.id;
+      const alreadyIn = topAgents.some(x => x.agentId === a.id && x.agentId !== editingAgentId);
+      const border = picked ? '#1890ff' : '#ebeef5';
+      const btnHtml = alreadyIn
+        ? '<button type="button" class="btn btn-default" disabled style="color:#c0c4cc;cursor:not-allowed;">已拉取</button>'
+        : `<button type="button" class="btn ${picked ? 'btn-primary' : 'btn-default'}" onclick="pickPlazaAgent('${a.id}')">${picked ? '已选中' : '拉取'}</button>`;
+      return `<div style="border:1px solid ${border};background:#fff;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;${picked ? 'box-shadow:0 0 0 1px #1890ff;' : ''}${alreadyIn ? 'opacity:.6;' : ''}">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <img src="${escHtml(a.icon)}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;background:#f5f7fa;" onerror="this.style.visibility='hidden'" />
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span style="font-weight:600;font-size:14px;color:#303133;">${escHtml(a.name)}</span>
+              <span style="background:#e8f3ff;color:#1890ff;font-size:11px;padding:1px 6px;border-radius:4px;white-space:nowrap;">${escHtml(a.platform)}</span>
+            </div>
+            <div style="color:#b0b5bd;font-size:12px;margin-top:4px;">服务商：${escHtml(a.vendor)}　ID：${escHtml(a.id)}</div>
+          </div>
+        </div>
+        <div style="color:#909399;font-size:12px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:38px;">${escHtml(a.desc)}</div>
+        <div style="text-align:right;">${btnHtml}</div>
+      </div>`;
+    }).join('');
   }
 
-  function handleAgentIconUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function (ev) {
-      document.getElementById('agentFormIcon').value = ev.target.result;
-      hideAppErr('agentErrIcon');
-      syncAgentIconPreview();
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  }
-  function syncAgentIconPreview() {
-    const img = document.getElementById('agentIconPreview');
-    const url = (document.getElementById('agentFormIcon').value || '').trim();
-    if (url) { img.src = url; img.style.display = 'block'; } else { img.style.display = 'none'; }
+  function pickPlazaAgent(id) {
+    pickedAgentId = id;
+    hideAppErr('agentErrPick');
+    closePlazaModal();
+    syncAgentPickCard();
+    renderPlazaGrid();
   }
 
-  function openAgentModal(code) {
-    editingAgentCode = code || null;
-    ['agentErrName', 'agentErrCode', 'agentErrIcon', 'agentErrDesc', 'agentErrCaps', 'agentErrPrompts', 'agentErrScopeSel', 'agentErrTerm', 'agentErrOwnerDept', 'agentErrOwnerName', 'agentErrOwnerContact', 'agentErrSort'].forEach(hideAppErr);
+  function syncAgentPickCard() {
+    const empty = document.getElementById('agentPickEmpty');
+    const card = document.getElementById('agentPickCard');
+    const g = getPlazaAgent(pickedAgentId);
+    if (!g) {
+      empty.style.display = '';
+      card.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    card.style.display = '';
+    document.getElementById('agentPickIcon').src = g.icon || '';
+    document.getElementById('agentPickName').textContent = g.name;
+    document.getElementById('agentPickPlatform').textContent = g.platform;
+    document.getElementById('agentPickDesc').textContent = g.desc || '-';
+    document.getElementById('agentPickId').textContent = g.id;
+    document.getElementById('agentPickVendor').textContent = g.vendor;
+  }
+
+  function openAgentModal(agentId) {
+    editingAgentId = agentId || null;
+    ['agentErrPick', 'agentErrScopeSel', 'agentErrOwnerDept', 'agentErrOwnerName', 'agentErrOwnerContact'].forEach(hideAppErr);
     scopeDeptsSel = new Set();
     scopeUsersSel = new Set();
-    if (editingAgentCode) {
-      const a = topAgents.find(x => x.code === code);
+    if (editingAgentId) {
+      const a = topAgents.find(x => x.agentId === agentId);
       document.getElementById('agentModalTitle').textContent = '编辑应用';
-      document.getElementById('agentFormName').value = a.name || '';
-      document.getElementById('agentFormCode').value = a.code || '';
-      document.getElementById('agentFormCode').disabled = true;
-      document.getElementById('agentFormCode').style.color = '#909399';
-      document.getElementById('agentFormIcon').value = a.icon || '';
-      document.getElementById('agentFormDesc').value = a.desc || '';
-      document.getElementById('agentFormCaps').value = a.caps || '';
+      pickedAgentId = a.agentId || null;
       document.getElementById('agentFormOwnerDept').value = a.ownerDept || '';
       document.getElementById('agentFormOwnerName').value = a.ownerName || '';
       document.getElementById('agentFormOwnerContact').value = a.ownerContact || '';
-      const terms = a.terms || ['pc', 'app'];
-      document.getElementById('agentTermPc').checked = terms.indexOf('pc') !== -1;
-      document.getElementById('agentTermApp').checked = terms.indexOf('app') !== -1;
-      agentPromptsTmp = (a.prompts || []).slice();
-      agentScopeMode = a.scope === 'custom' ? 'custom' : 'company';
       scopeDeptsSel = new Set(a.depts || []);
       scopeUsersSel = new Set(a.users || []);
-      agentStatusOn = a.status === 'enabled';
-      document.getElementById('agentFormSort').value = a.sort || 1;
     } else {
       document.getElementById('agentModalTitle').textContent = '新增应用';
-      document.getElementById('agentFormName').value = '';
-      document.getElementById('agentFormCode').value = '';
-      document.getElementById('agentFormCode').disabled = false;
-      document.getElementById('agentFormCode').style.color = '';
-      document.getElementById('agentFormIcon').value = '';
-      document.getElementById('agentFormDesc').value = '';
-      document.getElementById('agentFormCaps').value = '';
+      pickedAgentId = null;
       document.getElementById('agentFormOwnerDept').value = '';
       document.getElementById('agentFormOwnerName').value = '';
       document.getElementById('agentFormOwnerContact').value = '';
-      document.getElementById('agentTermPc').checked = true;
-      document.getElementById('agentTermApp').checked = true;
-      agentPromptsTmp = [''];
-      agentScopeMode = 'company';
-      agentStatusOn = true;
-      document.getElementById('agentFormSort').value = topAgents.length ? Math.max.apply(null, topAgents.map(a => a.sort || 0)) + 1 : 1;
     }
-    selectAgentScope(agentScopeMode);
-    selectAgentStatus(agentStatusOn);
-    renderAgentPromptRows();
     renderDeptSummary();
     renderUserSummary();
-    syncAgentIconPreview();
+    syncAgentPickCard();
     document.getElementById('agentModal').style.display = 'flex';
   }
   function closeAgentModal() {
@@ -4098,94 +4108,45 @@
 
   function saveAgentItem() {
     let ok = true;
-    const name = document.getElementById('agentFormName').value.trim();
-    const code = document.getElementById('agentFormCode').value.trim();
-    const icon = document.getElementById('agentFormIcon').value.trim();
-    const desc = document.getElementById('agentFormDesc').value.trim();
-    const caps = document.getElementById('agentFormCaps').value.trim();
     const ownerDept = document.getElementById('agentFormOwnerDept').value.trim();
     const ownerName = document.getElementById('agentFormOwnerName').value.trim();
     const ownerContact = document.getElementById('agentFormOwnerContact').value.trim();
-    const prompts = agentPromptsTmp.map(p => String(p).trim()).filter(Boolean);
-    const sortVal = parseInt(document.getElementById('agentFormSort').value, 10);
-    const terms = [];
-    if (document.getElementById('agentTermPc').checked) terms.push('pc');
-    if (document.getElementById('agentTermApp').checked) terms.push('app');
-    if (!name) { showAppErr('agentErrName', '请输入应用名称'); ok = false; }
-    else if (topAgents.some(x => x.name === name && x.code !== editingAgentCode)) { showAppErr('agentErrName', '已存在同名应用，请更换名称'); ok = false; }
-    if (!code) { showAppErr('agentErrCode'); ok = false; }
-    if (!icon) { showAppErr('agentErrIcon'); ok = false; }
-    if (!desc) { showAppErr('agentErrDesc'); ok = false; }
-    if (!caps) { showAppErr('agentErrCaps'); ok = false; }
-    if (!prompts.length) { showAppErr('agentErrPrompts'); ok = false; }
-    if (!terms.length) { showAppErr('agentErrTerm'); ok = false; }
+    if (!pickedAgentId) { showAppErr('agentErrPick'); ok = false; }
+    else if (topAgents.some(x => x.agentId === pickedAgentId && x.agentId !== editingAgentId)) { showAppErr('agentErrPick', '该智能体已拉取到业务支持中心，不能重复拉取'); ok = false; }
     if (ownerContact && !/^1[3-9]\d{9}$/.test(ownerContact) && !/^[\w.+-]+@[\w-]+(\.[\w-]+)+$/.test(ownerContact)) { showAppErr('agentErrOwnerContact'); ok = false; }
-    if (!sortVal || sortVal < 1) { showAppErr('agentErrSort'); ok = false; }
-    if (agentScopeMode === 'custom' && !scopeDeptsSel.size && !scopeUsersSel.size) {
-      showAppErr('agentErrScopeSel'); ok = false;
-    }
+    if (!scopeDeptsSel.size && !scopeUsersSel.size) { showAppErr('agentErrScopeSel'); ok = false; }
     if (!ok) return;
-    if (editingAgentCode) {
-      if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(code)) {
-        showAppErr('agentErrCode', '编码只能包含字母、数字、下划线，且以字母开头');
-        return;
-      }
-      if (code !== editingAgentCode && topAgents.some(a => a.code === code)) {
-        showAppErr('agentErrCode', '该编码已存在');
-        return;
-      }
-      const a = topAgents.find(x => x.code === editingAgentCode);
-      Object.assign(a, {
-        code, name, icon, desc, caps, prompts, ownerDept, ownerName, ownerContact, terms,
-        sort: sortVal,
-        status: agentStatusOn ? 'enabled' : 'disabled',
-        scope: agentScopeMode,
-        depts: Array.from(scopeDeptsSel),
-        users: Array.from(scopeUsersSel)
-      });
+    const g = getPlazaAgent(pickedAgentId);
+    const contentFields = {
+      agentId: g.id, name: g.name, icon: g.icon, desc: g.desc, platform: g.platform, vendor: g.vendor
+    };
+    const permFields = {
+      depts: Array.from(scopeDeptsSel),
+      users: Array.from(scopeUsersSel),
+      ownerDept, ownerName, ownerContact
+    };
+    if (editingAgentId) {
+      const a = topAgents.find(x => x.agentId === editingAgentId);
+      Object.assign(a, contentFields, permFields);
     } else {
-      if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(code)) {
-        showAppErr('agentErrCode', '编码只能包含字母、数字、下划线，且以字母开头');
-        return;
-      }
-      if (topAgents.some(a => a.code === code)) {
-        showAppErr('agentErrCode', '该编码已存在');
-        return;
-      }
-      topAgents.push({
-        code, name, icon, desc, caps, prompts, ownerDept, ownerName, ownerContact, terms,
-        sort: sortVal,
-        status: agentStatusOn ? 'enabled' : 'disabled',
-        scope: agentScopeMode,
-        depts: Array.from(scopeDeptsSel),
-        users: Array.from(scopeUsersSel)
-      });
+      topAgents.push(Object.assign({}, contentFields, permFields));
     }
     saveTopAgents();
     closeAgentModal();
     renderAgentTable();
   }
 
-  function toggleAgentStatus(code) {
-    const a = topAgents.find(x => x.code === code);
-    if (!a) return;
-    a.status = a.status === 'enabled' ? 'disabled' : 'enabled';
-    saveTopAgents();
-    renderAgentTable();
-  }
-
-  function deleteTopAgent(code) {
-    const a = topAgents.find(x => x.code === code);
+  function deleteTopAgent(agentId) {
+    const a = topAgents.find(x => x.agentId === agentId);
     if (!a) return;
     showCommonConfirm('删除应用', `确定删除应用「${a.name}」吗？删除后工作台顶部将不再展示该应用。`, () => {
-      topAgents = topAgents.filter(x => x.code !== code);
+      topAgents = topAgents.filter(x => x.agentId !== agentId);
       saveTopAgents();
       renderAgentTable();
     });
   }
 
   function renderTopAgents() {
-    topAgents.sort((x, y) => (x.sort || 999) - (y.sort || 999));
     renderAgentTable();
   }
 
